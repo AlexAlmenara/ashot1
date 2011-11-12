@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>aShot</class>
+ <widget class="QMainWindow" name="aShot">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>aShot</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources/aShotResources.qrc">
+    <normaloff>:/camara-icono-5816-128.png</normaloff>:/camara-icono-5816-128.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>40</y>
+      <width>221</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>219</width>
+       <height>149</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="imageLabel">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>110</y>
+      <width>21</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>400</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;Archivo</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="action_Abrir"/>
+    <addaction name="separator"/>
+    <addaction name="action_Guardar"/>
+    <addaction name="actionGuardar_como"/>
+    <addaction name="separator"/>
+    <addaction name="actionIm_primir"/>
+    <addaction name="separator"/>
+    <addaction name="action_Cerrar"/>
+    <addaction name="actionCerrar_todo"/>
+    <addaction name="action_Salir"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Editar</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuAyuda">
+    <property name="title">
+     <string>A&amp;yuda</string>
+    </property>
+    <addaction name="actionAyuda_de_aShot"/>
+    <addaction name="actionAcerca_de"/>
+   </widget>
+   <widget class="QMenu" name="menuFiltros">
+    <property name="title">
+     <string>&amp;Filtros</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_Imagen">
+    <property name="title">
+     <string>&amp;Imagen</string>
+    </property>
+    <widget class="QMenu" name="menuAjustes">
+     <property name="title">
+      <string>Ajustes</string>
+     </property>
+     <addaction name="actionBrillo_Contraste"/>
+    </widget>
+    <addaction name="menuAjustes"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionTama_o_normal"/>
+    <addaction name="separator"/>
+    <addaction name="actionAjustar_a_ventana"/>
+    <addaction name="action_Informacion_imagen"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Edit"/>
+   <addaction name="menu_Imagen"/>
+   <addaction name="menuFiltros"/>
+   <addaction name="menuAyuda"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Abrir"/>
+   <addaction name="actionIm_primir"/>
+   <addaction name="action_Guardar"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_Abrir">
+   <property name="icon">
+    <iconset resource="resources/aShotResources.qrc">
+     <normaloff>:/abrir-el-archivo-cian-icono-6651-128.png</normaloff>:/abrir-el-archivo-cian-icono-6651-128.png</iconset>
+   </property>
+   <property name="text">
+    <string>A&amp;brir</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionAcerca_de">
+   <property name="icon">
+    <iconset resource="resources/aShotResources.qrc">
+     <normaloff>:/camara-icono-5816-128.png</normaloff>:/camara-icono-5816-128.png</iconset>
+   </property>
+   <property name="text">
+    <string>Acerca de ...</string>
+   </property>
+  </action>
+  <action name="actionAyuda_de_aShot">
+   <property name="text">
+    <string>Ayuda de aShot</string>
+   </property>
+  </action>
+  <action name="action_Salir">
+   <property name="text">
+    <string>&amp;Salir</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="action_Guardar">
+   <property name="icon">
+    <iconset resource="resources/aShotResources.qrc">
+     <normaloff>:/editar-archivo-de-salvar-en-disco-icono-4876-48.png</normaloff>:/editar-archivo-de-salvar-en-disco-icono-4876-48.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Guardar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionGuardar_como">
+   <property name="text">
+    <string>Guardar &amp;como...</string>
+   </property>
+  </action>
+  <action name="action_Cerrar">
+   <property name="text">
+    <string>&amp;Cerrar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionCerrar_todo">
+   <property name="text">
+    <string>Cerrar &amp;todo</string>
+   </property>
+  </action>
+  <action name="actionBrillo_Contraste">
+   <property name="text">
+    <string>Brillo/Contraste</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="text">
+    <string>Zoom &amp;In</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="text">
+    <string>Zoom &amp;Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionTama_o_normal">
+   <property name="text">
+    <string>Tamaño &amp;normal</string>
+   </property>
+  </action>
+  <action name="actionAjustar_a_ventana">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ajustar a &amp;ventana</string>
+   </property>
+  </action>
+  <action name="actionIm_primir">
+   <property name="icon">
+    <iconset resource="resources/aShotResources.qrc">
+     <normaloff>:/imprimir-agt-icono-9402-48.png</normaloff>:/imprimir-agt-icono-9402-48.png</iconset>
+   </property>
+   <property name="text">
+    <string>Im&amp;primir</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="action_Informacion_imagen">
+   <property name="text">
+    <string>&amp;Informacion imagen</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="resources/aShotResources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

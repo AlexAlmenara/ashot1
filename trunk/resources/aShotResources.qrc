@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>firefox.png</file>
+        <file>Ayuda.txt</file>
+        <file>camara-icono-5816-128.png</file>
+        <file>editar-archivo-de-salvar-en-disco-icono-4876-48.png</file>
+        <file>imprimir-agt-icono-9402-48.png</file>
+        <file>abrir-el-archivo-cian-icono-6651-128.png</file>
+    </qresource>
+</RCC>
