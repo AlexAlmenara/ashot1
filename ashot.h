@@ -7,7 +7,7 @@
 
 #include "Imagen/brillocontraste.h"
 #include "Ayuda/ayuda.h"
-#include "Ayuda/acercade.h"
+#include "imagen.h"
 
 namespace Ui {
     class aShot;
@@ -25,9 +25,8 @@ private:
     Ui::aShot *ui;
     BrilloContraste * bc;
     Ayuda * ayuda;
-    Acercade * acercade;
     aShot * a;
-    QImage * image;
+    Imagen * imagen;
     double scaleFactor;
     //bool hasImage;
 
@@ -53,7 +52,7 @@ private slots:
     void normalSize();
     void fitToWindow();
     void info_imagen();
-    //void about();
+    void acercade();
     void prueba();
 
 

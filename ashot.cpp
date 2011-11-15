@@ -1,8 +1,13 @@
 #include "ashot.h"
 #include "ui_ashot.h"
 
+//#include <iostream>
 //#include <stdio.h>
 //#include <stdlib.h>
+//#include <sstream>
+//#include <string>
+
+//using namespace std;
 
 
 
@@ -24,6 +29,8 @@ aShot::aShot(QWidget *parent) :
     //Form f; //QWidget
     //connect(ui->action_Abrir, SIGNAL(triggered()), f, SLOT(show()));
     //connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(OpenNewWindow()));
+
+
     ui->imageLabel->setBackgroundRole(QPalette::Base);
     ui->imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     ui->imageLabel->setScaledContents(true);
@@ -62,16 +69,16 @@ void aShot::cerrarTodo() {
 }
 
 void aShot::abrir() {
-    QString fileName = "/home/alex/Escritorio/huevo.tif";  //QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
+    QString fileName = "/home/alex/Escritorio/huevo2.tif";  //QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
 
     if (!fileName.isEmpty()) {
-        image = new QImage(fileName);
-        if (image->isNull()) {
+        imagen = new Imagen(fileName);
+        if (imagen->isNull()) {
             QMessageBox::information(this, tr("aShot Abrir"), tr("No se puede cargar %1.").arg(fileName));
             return;
         }
 
-        ui->imageLabel->setPixmap(QPixmap::fromImage(*image));
+        ui->imageLabel->setPixmap(QPixmap::fromImage(imagen->qImage()));
         scaleFactor = 1.0;
 
         enableActions();
@@ -122,65 +129,97 @@ void aShot::fitToWindow() {
 
 
 void aShot::info_imagen() {
-    if (image != NULL)
-        if (image->isNull())
-            QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
-        else {
-            //itoa(image->height(), buffer, 10);
-            QString format;
-            switch (image->format()) {
-                case 0: format = "The image is invalid";
-                case 1: format = "The image is stored using 1-bit per pixel. Bytes are packed with the most significant bit (MSB) first."; break;
-            case 2: format = "The image is stored using 1-bit per pixel. Bytes are packed with the less significant bit (LSB) first."; break;
-                case 3: format = "The image is stored using 8-bit indexes into a colormap."; break;
-                case 4: format = "The image is stored using a 32-bit RGB format (0xffRRGGBB)."; break;
-            case 5: format = "The image is stored using a 32-bit ARGB format (0xAARRGGBB)."; break;
-            case 6: format = "The image is stored using a premultiplied 32-bit ARGB format (0xAARRGGBB)"; break;
-                default: format = "formato desconocido";
-            }
+    if (imagen->isNull())
+        QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
+    else {
+        //itoa(image->height(), buffer, 10);
+        //QRgb pix = imagen->qimage->pixel(4, 5);
+        //int val = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
+        //tambien esta qGreen, qRed, qBlue
+        /*ostringstream s;
+        s << imagen->entropia();
+        string cadena = s.str();*/
+
+        QMessageBox::information(this, tr("Informacion de la imagen"),
+                                 "Nombre del fichero: " + imagen->fileName()
+                                 + "\nExtension: " + imagen->extension()
+                                 + "\nError: " + QString::number(imagen->error())
+                                 + "\nDimension en pixeles: " + QString::number(imagen->width()) + " x " + QString::number(imagen->height()) + " pixeles \nSize: " + QString::number(imagen->size())
+                                 + "pixeles \nFormato: " + imagen->formato()
+                                 + "\nBrillo: " + QString::number(imagen->brillo())  + "\nContraste: " + QString::number(imagen->contraste())
+                                 +"\nEntropia: " + QString::number(imagen->entropia())
+                                 + "\nRango Dinamico: [" + QString::number(imagen->min()) + ".." + QString::number(imagen->max()) + "]\n");
+
+    }
+
+}
 
 
-            //size = width * height
-            QRgb pix = image->pixel(4, 5);
-            int val = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
-            QMessageBox::information(this, tr("Informacion de la imagen"),
-                                     "height: " + QString::number(image->height()) + ", width: " + QString::number(image->width()) + "\nFormato: " + format
-                                     + "val: " + QString::number(val));
-
-        }
-
+void aShot::acercade() {
+    QMessageBox::about(this, tr("About aShot 1.0"),
+            tr("<p>The <b>aShot 1.0</b> example shows how to combine QLabel "
+               "and QScrollArea to display an image. QLabel is typically used "
+               "for displaying a text, but it can also display an image. "
+               "QScrollArea provides a scrolling view around another widget. "
+               "If the child widget exceeds the size of the frame, QScrollArea "
+               "automatically provides scroll bars. </p><p>The example "
+               "demonstrates how QLabel's ability to scale its contents "
+               "(QLabel::scaledContents), and QScrollArea's ability to "
+               "automatically resize its contents "
+               "(QScrollArea::widgetResizable), can be used to implement "
+               "zooming and scaling features. </p><p>In addition the example "
+               "shows how to use QPainter to print an image.</p>"));
 }
 
 
 
 
 void aShot::prueba() {
-    if (image->format() != 3) { //8-bit indexado, monocromo
+    if (imagen->qimage->format() != 3) { //8-bit indexado, monocromo
         QMessageBox::information(this, tr("Informacion de la imagen"), "no es monocromo indexado");
         return;
     }
 
-    QRgb value;
+    /*QRgb value;
     value = qRgb(122, 163, 39); // 0xff7aa327
-    image->setColor(0, value);
+    imagen->qimage->setColor(0, value);
 
     value = qRgb(237, 187, 51); // 0xffedba31
-    image->setColor(1, value);
+    imagen->qimage->setColor(1, value);
 
     //value = qRgb(189, 149, 39); // 0xffbd9527
     //image.setColor(2, value);
 
-    for (int i = 0; i < image->width(); i++)
-        for (int j = 0; j < image->height(); j++) {
+    for (int i = 0; i < imagen->width(); i++)
+        for (int j = 0; j < imagen->height(); j++) {
             if (i == j)
-                image->setPixel(i, j, 0);
+                imagen->qimage->setPixel(i, j, 0);
             else
-                image->setPixel(i, j, 1);
+                imagen->qimage->setPixel(i, j, 1);
+        }
+    */
+    int A = 2, B = 2; //tambien: Qimage.setColorTable(QVector<QRgb>)
+    int * vout = new int [imagen->M()]; //tabla LUT
+    for (int vin = 0; vin < imagen->M(); i++) {
+        vout[vin] = A * vin + B;
+        if (vout[vin] > imagen->M() - 1)
+            vout[vin] = imagen->M() - 1;
+        else
+            if (vout[vin] < 0)
+                vout[vin] = 0;
+    }
+
+    //QRgb pix = imagen->qimage->pixel(4, 5);
+    int vin; // = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
+    for (int i = 0; i < imagen->width(); i++)
+        for (int j = 0; j < imagen->height(); j++) {
+            vin = qGray(imagen->qimage->pixel(i, j));
+            imagen->qimage->setPixel(i, j, vout[vin]);
         }
 
-
+    imagen->update();
     //actualiza label
-    ui->imageLabel->setPixmap(QPixmap::fromImage(*image));
+    ui->imageLabel->setPixmap(QPixmap::fromImage(imagen->qImage()));
     scaleFactor = 1.0;
 
  }
@@ -197,8 +236,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionCerrar_todo, SIGNAL(triggered()), this, SLOT(cerrarTodo()));
     ui->actionCerrar_todo->setEnabled(false);
 
-    this->acercade = new Acercade();
-    connect(ui->actionAcerca_de, SIGNAL(triggered()), this->acercade, SLOT(show()));
+    connect(ui->actionAcerca_de, SIGNAL(triggered()), this, SLOT(acercade()));
     this->ayuda = new Ayuda();
     connect(ui->actionAyuda_de_aShot, SIGNAL(triggered()), this->ayuda, SLOT(show()));
     ui->menuAjustes->setEnabled(false);
