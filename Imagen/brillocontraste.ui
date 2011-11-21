@@ -31,7 +31,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBoxBrillo"/>
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxBrillo"/>
      </item>
     </layout>
    </item>
@@ -52,7 +52,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBoxContraste"/>
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxContraste"/>
      </item>
     </layout>
    </item>
@@ -66,17 +66,11 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QPushButton" name="ButtonReiniciar">
+       <property name="text">
+        <string>Reiniciar</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="ButtonAceptar">

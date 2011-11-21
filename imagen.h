@@ -11,7 +11,7 @@
 class Imagen {
 
 private:
-    int * hist;
+    int * hist; //histograma: frecuencias absolutas de los niveles. Si fuera COLOR: 3 hist
     int Mniveles; //numero total de niveles
     QString file;
     int err; //error: imagen null, o se usa un formato que no hemos albergado para vect
@@ -36,7 +36,8 @@ public:
     int width();
     int size();
 
-    void update();
+    void update(); //actualiza info asociada a imagen: vector hist
+    void transformar(int * vout); //trasnforma una imagen con una tabla LUT dada, es decir, vector vout
     //int pixel(int x, int y);
     //void setPixel(int value);
 
