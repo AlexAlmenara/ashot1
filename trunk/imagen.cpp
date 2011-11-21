@@ -34,15 +34,26 @@ int Imagen::error() {
 }
 
 void Imagen::createHist() {
-    if (qimage->format() != 3) { //8-bit indexado, monocromo
-        err = 1; //error
-    }
 
-    Mniveles = 256;
+    printf("height: %d", this->height());
+     printf("width: %d", this->width());
+
+    if (qimage->format() == 3) //8 bits indexado, monocromo
+        Mniveles = 256;
+    else if (qimage->format() == 4) //32 bits, RGB
+        Mniveles = 256;
+         else Mniveles = 1; //error
+
     hist = new int [Mniveles];
     for (int i = 0; i < Mniveles; i++)
         hist[i] = 0;
 
+    if ((qimage->format() != 3) && (qimage->format() != 4)) { //8-bit indexado, monocromo, o RGB 32 bits
+        err = 1; //error
+        return;
+    }
+
+    err = 0;
     QRgb pix = this->qimage->pixel(4, 5); //un valor cualquiera
     int val = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
     //tambien esta qGreen, qRed, qBlue
@@ -59,6 +70,20 @@ void Imagen::createHist() {
 
 void Imagen::update() {
     createHist();
+}
+
+
+
+void Imagen::transformar(int * vout) {
+    //QRgb pix = imagen->qimage->pixel(4, 5);
+    int vin; // = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
+    for (int i = 0; i < width(); i++)
+        for (int j = 0; j < height(); j++) {
+            vin = qGray(qimage->pixel(i, j));
+            qimage->setPixel(i, j, vout[vin]); //ya se garantiza que el tamaño de vout es de M elementos
+        }
+
+    update();
 }
 
 int Imagen::M() { //numero total de niveles
@@ -111,17 +136,16 @@ double Imagen::contraste() {
 double Imagen::entropia() {
     if (err) return 0.0;
 
-    cout << "rel: " << rel(3);
+   /* cout << "rel: " << rel(3);
     for (int i = 0; i < M(); i++) {
         cout << "hist" << i << ": " << hist[i] << ", rel: " << rel(i) << endl;
-    }
+    }*/
 
     double entr = 0.0;
     for (int i = 0; i < M(); i++)
         if (rel(i) > 0) //para que no de error matematico
             entr += rel(i) * log2(rel(i));
 
-    cout << "entr: " << entr << endl;
     return (- entr);
 }
 

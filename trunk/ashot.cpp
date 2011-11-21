@@ -54,6 +54,14 @@ aShot::~aShot()
 }
 
 
+void aShot::updateImageLabel() {
+    ui->imageLabel->setPixmap(QPixmap::fromImage(imagen->qImage()));
+    scaleFactor = 1.0;
+
+    if (!ui->actionAjustar_a_ventana->isChecked())
+        ui->imageLabel->adjustSize();
+}
+
 
 //slots:
 
@@ -69,7 +77,7 @@ void aShot::cerrarTodo() {
 }
 
 void aShot::abrir() {
-    QString fileName = "/home/alex/Escritorio/huevo2.tif";  //QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
+    QString fileName = "/home/alex/Escritorio/1.jpg";  //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath());
 
     if (!fileName.isEmpty()) {
         imagen = new Imagen(fileName);
@@ -78,16 +86,33 @@ void aShot::abrir() {
             return;
         }
 
-        ui->imageLabel->setPixmap(QPixmap::fromImage(imagen->qImage()));
-        scaleFactor = 1.0;
 
         enableActions();
         updateZoomActions();
+        updateImageLabel();
 
-        if (!ui->actionAjustar_a_ventana->isChecked())
-            ui->imageLabel->adjustSize();
+        bc->setValues(imagen);
     }
 }
+
+
+
+void aShot::guardar() {
+    const QString fileName = imagen->fileName();
+    imagen->qimage->save(fileName, 0, -1);
+}
+
+
+void aShot::guardarComo() {
+    const QString fileName = QFileDialog::getSaveFileName(this, tr("Guardar archivo"), QDir::currentPath());
+    imagen->qimage->save(fileName, 0, -1);
+    /* QMessageBox::information(this, tr("aShot Guardar"), tr("No se puede Guardar %1.").arg(fileName));
+        return;
+    }*/
+}
+
+
+
 
 void aShot::imprimir() {
     Q_ASSERT(ui->imageLabel->pixmap());//comprueba que haya imagen
@@ -173,6 +198,28 @@ void aShot::acercade() {
 
 
 
+void aShot::toGray() {
+    /*imagen->qimage = * */
+    //QVector<QRgb> tabla = QVector<QRgb>();
+
+    QRgb pix;
+    for (int i = 0; i < imagen->width(); i++) // igual: qimage->width()
+        for (int j = 0; j < imagen->height(); j++) {
+            pix = imagen->qimage->pixel(i, j);
+            pix = (QRgb) (0.299 * (double) qRed(pix) + 0.587 * (double) qGreen(pix) + 0.114 * (double) qBlue(pix));
+            if (pix > imagen->M() - 1)
+                pix = imagen->M() - 1;
+            if (pix < 0)
+                pix = 0;
+
+            imagen->qimage->setPixel(i, j, pix); //escritura tipo imagen RGB, diferente de 8 bits indexado
+        }
+
+    *imagen->qimage = imagen->qimage->convertToFormat(QImage::Format_Indexed8); //3: escala de grises indexado
+
+    imagen->update();
+    updateImageLabel();
+}
 
 void aShot::prueba() {
     if (imagen->qimage->format() != 3) { //8-bit indexado, monocromo
@@ -198,10 +245,50 @@ void aShot::prueba() {
                 imagen->qimage->setPixel(i, j, 1);
         }
     */
-    int A = 2, B = 2; //tambien: Qimage.setColorTable(QVector<QRgb>)
+
+    int ntramos = 3;
+    double * A = new double[ntramos];
+    double * B = new double [ntramos];
+    int * extremos = new int [ntramos]; //seria ntramos -1, pero se queda uno mas para q no se qede size 0 en caso de q ntramos=1
+    int tramo_i = 0; //tramo actual
+    //tambien: Qimage.setColorTable(QVector<QRgb>)
     int * vout = new int [imagen->M()]; //tabla LUT
-    for (int vin = 0; vin < imagen->M(); i++) {
-        vout[vin] = A * vin + B;
+
+    //intro datos
+    A[0] = 3; B[0] = 2;
+    A[1] = 3; B[1] = 0;
+    A[2] = 0.3; B[2] = -1;
+    extremos[0] = 20; //nivel 20
+    extremos[1] = 180;
+    //fin intro datos
+    for (int vin = 0; vin < imagen->M(); vin++) {
+
+        if (ntramos > 1)
+            if (vin == extremos[tramo_i])
+                tramo_i++; //siguiente tramo
+
+        vout[vin] = (int) (A[tramo_i] * (double) vin + B[tramo_i]);
+        if (vout[vin] > imagen->M() - 1) //en caso de que se haya salido del rango de niveles (0..255)
+            vout[vin] = imagen->M() - 1;
+        else
+            if (vout[vin] < 0)
+                vout[vin] = 0;
+    }
+
+     imagen->transformar(vout);
+     updateImageLabel();  //actualiza label
+
+ }
+
+
+void aShot::prueba2() {
+    double brillo2 = 100.0, contraste2 = 30.0; //tambien: Qimage.setColorTable(QVector<QRgb>)
+    double A = contraste2 / imagen->contraste();
+    double B = brillo2 - A * imagen->brillo();
+
+    int * vout = new int [imagen->M()]; //tabla LUT
+    for (int vin = 0; vin < imagen->M(); vin++) {
+        vout[vin] = (int) (A * (double) vin + B);
         if (vout[vin] > imagen->M() - 1)
             vout[vin] = imagen->M() - 1;
         else
@@ -209,20 +296,30 @@ void aShot::prueba() {
                 vout[vin] = 0;
     }
 
-    //QRgb pix = imagen->qimage->pixel(4, 5);
-    int vin; // = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
-    for (int i = 0; i < imagen->width(); i++)
-        for (int j = 0; j < imagen->height(); j++) {
-            vin = qGray(imagen->qimage->pixel(i, j));
-            imagen->qimage->setPixel(i, j, vout[vin]);
-        }
 
-    imagen->update();
-    //actualiza label
-    ui->imageLabel->setPixmap(QPixmap::fromImage(imagen->qImage()));
-    scaleFactor = 1.0;
+    imagen->transformar(vout);
+    updateImageLabel();//actualiza label
+}
 
- }
+
+void aShot::prueba3() { //ecualizacion del histograma: aproximacion de distribucion uniforme, mantiene entropia
+
+    int * vout = new int [imagen->M()]; //tabla LUT
+    for (int vin = 0; vin < imagen->M(); vin++) {
+        vout[vin] = 4; //normal:sdf
+        if (vout[vin] < 0)
+            vout[vin] = 0; //vout = max(0, expresion anterior);
+
+        if (vout[vin] > imagen->M() - 1)
+            vout[vin] = imagen->M() - 1;
+        else
+            if (vout[vin] < 0)
+                vout[vin] = 0;
+    }
+
+    imagen->transformar(vout);
+    updateImageLabel();//actualiza label
+}
 
 
 //funciones privadas:
@@ -240,7 +337,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     this->ayuda = new Ayuda();
     connect(ui->actionAyuda_de_aShot, SIGNAL(triggered()), this->ayuda, SLOT(show()));
     ui->menuAjustes->setEnabled(false);
-    this->bc = new BrilloContraste();
+    this->bc = new BrilloContraste(); //esto se hara una vez abierta la imagen
     connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this->bc, SLOT(show()));
     ui->actionBrillo_Contraste->setEnabled(false);
 
@@ -248,8 +345,9 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     ui->actionAjustar_a_ventana->setEnabled(false);
     //ui->actionAjustar_a_ventana->setCheckable(true); //ya se pone en el Qt Designer
 
-    connect(ui->action_Guardar, SIGNAL(triggered()), this, SLOT(prueba()));
+    connect(ui->action_Guardar, SIGNAL(triggered()), this, SLOT(guardar()));
     ui->action_Guardar->setEnabled(false);
+    connect(ui->actionGuardar_como, SIGNAL(triggered()), this, SLOT(guardarComo()));
     ui->actionGuardar_como->setEnabled(false);
 
     connect(ui->actionIm_primir, SIGNAL(triggered()), this, SLOT(imprimir()));
@@ -266,6 +364,11 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->action_Informacion_imagen, SIGNAL(triggered()), this, SLOT(info_imagen()));
     ui->action_Informacion_imagen->setEnabled(false);
 
+    connect(ui->actionToGray, SIGNAL(triggered()), this, SLOT(toGray()));
+    ui->actionToGray->setEnabled(false);
+
+    connect(ui->actionPrueba, SIGNAL(triggered()), this, SLOT(prueba())); //prueba: cuidado no se ha hecho el enable false y luego true
+
 }
 
 void aShot::enableActions() {
@@ -278,6 +381,7 @@ void aShot::enableActions() {
     ui->actionGuardar_como->setEnabled(true);
     ui->actionIm_primir->setEnabled(true);
     ui->action_Informacion_imagen->setEnabled(true);
+    ui->actionToGray->setEnabled(true);
 }
 
 void aShot::updateZoomActions() { //activa o desactiva acciones de zoom segun la accion fitTowindow

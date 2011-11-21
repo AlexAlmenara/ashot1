@@ -40,6 +40,7 @@ private:
     void updateZoomActions();
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
+    void updateImageLabel();
 
 
 private slots:
@@ -53,7 +54,13 @@ private slots:
     void fitToWindow();
     void info_imagen();
     void acercade();
+    void guardar();
+    void guardarComo();
+    void toGray(); //convierte imagen a escala de grises
+
     void prueba();
+    void prueba2();
+    void prueba3();
 
 
 };

@@ -91,6 +91,7 @@
     </property>
     <addaction name="actionAyuda_de_aShot"/>
     <addaction name="actionAcerca_de"/>
+    <addaction name="actionPrueba"/>
    </widget>
    <widget class="QMenu" name="menuFiltros">
     <property name="title">
@@ -106,6 +107,7 @@
       <string>Ajustes</string>
      </property>
      <addaction name="actionBrillo_Contraste"/>
+     <addaction name="actionToGray"/>
     </widget>
     <addaction name="menuAjustes"/>
     <addaction name="separator"/>
@@ -250,6 +252,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionPrueba">
+   <property name="text">
+    <string>Prueba</string>
+   </property>
+  </action>
+  <action name="actionToGray">
+   <property name="text">
+    <string>a Escala de grises</string>
    </property>
   </action>
  </widget>
