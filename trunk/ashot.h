@@ -57,6 +57,7 @@ private slots:
     void guardar();
     void guardarComo();
     void toGray(); //convierte imagen a escala de grises
+    void negativo(); //convierte imagen a negativo
 
     void prueba();
     void prueba2();

@@ -34,19 +34,21 @@ int Imagen::error() {
 }
 
 void Imagen::createHist() {
-
-    printf("height: %d", this->height());
-     printf("width: %d", this->width());
-
     if (qimage->format() == 3) //8 bits indexado, monocromo
         Mniveles = 256;
     else if (qimage->format() == 4) //32 bits, RGB
         Mniveles = 256;
-         else Mniveles = 1; //error
+         else Mniveles = 2; //error
 
+    printf("entro2");
+    Mniveles = 256;
     hist = new int [Mniveles];
-    for (int i = 0; i < Mniveles; i++)
+    printf("ya creado");
+    acum = new int [Mniveles];
+    for (int i = 0; i < Mniveles; i++) {
         hist[i] = 0;
+        acum[i] = 0;
+    }
 
     if ((qimage->format() != 3) && (qimage->format() != 4)) { //8-bit indexado, monocromo, o RGB 32 bits
         err = 1; //error
@@ -54,15 +56,23 @@ void Imagen::createHist() {
     }
 
     err = 0;
-    QRgb pix = this->qimage->pixel(4, 5); //un valor cualquiera
-    int val = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
-    //tambien esta qGreen, qRed, qBlue
+    QRgb pix; //= this->qimage->pixel(4, 5); //un valor cualquiera
+    int val; //= qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
+
+    //se crea hist
     for (int i = 0; i < this->width(); i++) // igual: qimage->width()
         for (int j = 0; j < this->height(); j++) {
             pix = qimage->pixel(i, j);
             val = qGray(pix);
             hist[val]++; //frecuencia absoluta de nivel de gris val
         }
+
+    //se crea acum
+    int suma = 0;
+    for (int i = 0; i < this->M(); i++) {
+        suma += hist[i];
+        acum[i] = suma;
+    }
 }
 
 
@@ -136,22 +146,35 @@ double Imagen::contraste() {
 double Imagen::entropia() {
     if (err) return 0.0;
 
-   /* cout << "rel: " << rel(3);
+   /* cout << "rel: " << hRel(3);
     for (int i = 0; i < M(); i++) {
-        cout << "hist" << i << ": " << hist[i] << ", rel: " << rel(i) << endl;
+        cout << "hist" << i << ": " << hist[i] << ", rel: " << hRel(i) << endl;
     }*/
 
     double entr = 0.0;
     for (int i = 0; i < M(); i++)
-        if (rel(i) > 0) //para que no de error matematico
-            entr += rel(i) * log2(rel(i));
+        if (hRel(i) > 0) //para que no de error matematico
+            entr += hRel(i) * log2(hRel(i));
 
     return (- entr);
 }
 
 
-double Imagen::rel(int i) { //frecuencia relativa del nivel i (para histograma relativo)
+int Imagen::hAbs(int i) {
+    return hist[i];
+}
+
+double Imagen::hRel(int i) { //frecuencia relativa del nivel i (para histograma relativo)
     return ((double) hist[i] / (double) size());
+}
+
+int Imagen::hAcum(int i) {
+    return acum[i];
+}
+
+
+double Imagen::hAcumNorm(int i) {
+    return ((double) acum[i] / (double) size());
 }
 
 
