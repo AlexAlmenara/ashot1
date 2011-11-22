@@ -77,7 +77,7 @@ void aShot::cerrarTodo() {
 }
 
 void aShot::abrir() {
-    QString fileName = "/home/alex/Escritorio/1.jpg";  //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath());
+    QString fileName = "/home/alex/Escritorio/huevoo.tif"; //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //
 
     if (!fileName.isEmpty()) {
         imagen = new Imagen(fileName);
@@ -85,7 +85,6 @@ void aShot::abrir() {
             QMessageBox::information(this, tr("aShot Abrir"), tr("No se puede cargar %1.").arg(fileName));
             return;
         }
-
 
         enableActions();
         updateZoomActions();
@@ -199,24 +198,38 @@ void aShot::acercade() {
 
 
 void aShot::toGray() {
-    /*imagen->qimage = * */
     //QVector<QRgb> tabla = QVector<QRgb>();
+    //tabla.append(pix);
+    //pix = imagen->qimage->color(indice); //devuelve rgb del indice de tabla indexada
+    //indice = imagen->qimage->pixelIndex(i, j); //devuelve el indice de la tabla indexada
 
     QRgb pix;
+    int value;
     for (int i = 0; i < imagen->width(); i++) // igual: qimage->width()
         for (int j = 0; j < imagen->height(); j++) {
             pix = imagen->qimage->pixel(i, j);
-            pix = (QRgb) (0.299 * (double) qRed(pix) + 0.587 * (double) qGreen(pix) + 0.114 * (double) qBlue(pix));
-            if (pix > imagen->M() - 1)
-                pix = imagen->M() - 1;
-            if (pix < 0)
-                pix = 0;
+            value = (int) (0.299 * (double) qRed(pix) + 0.587 * (double) qGreen(pix) + 0.114 * (double) qBlue(pix)); //NTSC
+            //value = qGray(pix); //es casi equivalente
+            if (value > imagen->M() - 1)
+                value = imagen->M() - 1;
 
+            if (value < 0)
+                value = 0;
+
+            pix = qRgb(value, value, value);
             imagen->qimage->setPixel(i, j, pix); //escritura tipo imagen RGB, diferente de 8 bits indexado
         }
 
     *imagen->qimage = imagen->qimage->convertToFormat(QImage::Format_Indexed8); //3: escala de grises indexado
 
+    imagen->update();
+    updateImageLabel();
+    ui->actionToGray->setEnabled(false);
+}
+
+
+void aShot::negativo() {
+    imagen->qimage->invertPixels(); //el negativo de la imagen
     imagen->update();
     updateImageLabel();
 }
@@ -367,6 +380,9 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionToGray, SIGNAL(triggered()), this, SLOT(toGray()));
     ui->actionToGray->setEnabled(false);
 
+    connect(ui->actionNegativo, SIGNAL(triggered()), this, SLOT(negativo()));
+    ui->actionNegativo->setEnabled(false);
+
     connect(ui->actionPrueba, SIGNAL(triggered()), this, SLOT(prueba())); //prueba: cuidado no se ha hecho el enable false y luego true
 
 }
@@ -381,7 +397,10 @@ void aShot::enableActions() {
     ui->actionGuardar_como->setEnabled(true);
     ui->actionIm_primir->setEnabled(true);
     ui->action_Informacion_imagen->setEnabled(true);
-    ui->actionToGray->setEnabled(true);
+    ui->actionNegativo->setEnabled(true);
+
+    if (imagen->qimage->format() != 3) //si no es en escala de grises se habilita
+        ui->actionToGray->setEnabled(true);
 }
 
 void aShot::updateZoomActions() { //activa o desactiva acciones de zoom segun la accion fitTowindow

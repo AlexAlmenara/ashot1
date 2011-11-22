@@ -26,6 +26,11 @@ BrilloContraste::BrilloContraste(QWidget *parent) :
 
     connect(ui->doubleSpinBoxContraste, SIGNAL(valueChanged(double)), this, SLOT(DoubleToIntC(double)));
     connect(this, SIGNAL(updateSliderC(int)), ui->SliderContraste, SLOT(setValue(int)));
+
+
+    //cambios de slider y spinbox cambian imageLabel directamente
+    //connect(ui->doubleSpinBoxBrillo, SIGNAL(valueChanged(double)), this, SLOT(AplicarCambios());
+    //tener una imagen auxiliar
 }
 
 

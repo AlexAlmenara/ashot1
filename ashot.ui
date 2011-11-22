@@ -108,6 +108,7 @@
      </property>
      <addaction name="actionBrillo_Contraste"/>
      <addaction name="actionToGray"/>
+     <addaction name="actionNegativo"/>
     </widget>
     <addaction name="menuAjustes"/>
     <addaction name="separator"/>
@@ -262,6 +263,11 @@
   <action name="actionToGray">
    <property name="text">
     <string>a Escala de grises</string>
+   </property>
+  </action>
+  <action name="actionNegativo">
+   <property name="text">
+    <string>Negativo</string>
    </property>
   </action>
  </widget>
