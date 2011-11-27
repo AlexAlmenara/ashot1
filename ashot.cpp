@@ -90,7 +90,7 @@ void aShot::abrir() {
         updateZoomActions();
         updateImageLabel();
 
-        bc->setValues(imagen);
+        //bc->setValues(imagen);
     }
 }
 
@@ -153,6 +153,9 @@ void aShot::fitToWindow() {
 
 
 void aShot::info_imagen() {
+    if (imagen == NULL)
+        QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
+    else
     if (imagen->isNull())
         QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
     else {
@@ -233,6 +236,27 @@ void aShot::negativo() {
     imagen->update();
     updateImageLabel();
 }
+
+
+void aShot::showNewBC() { //crea bc y lo muestra
+    bc = new BrilloContraste(0, imagen, ui->imageLabel);
+    //this->bc = new BrilloContraste(this); //esto se hara una vez abierta la imagen
+    //connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this->bc, SLOT(show()));
+    connect(bc, SIGNAL(closed()), this, SLOT(aplicarBC()));
+    bc->show();
+}
+
+
+void aShot::aplicarBC() {
+    //printf("aplicarrr");
+    //delete imagen;
+    *imagen = *bc->imagenAux;
+    //imagen = new Imagen(bc->imagenAux->fileName()); //tambien pasa si se cancela, pero no importa, en ese caso imageAux seria la imagen original
+    delete bc;
+}
+
+
+
 
 void aShot::prueba() {
     if (imagen->qimage->format() != 3) { //8-bit indexado, monocromo
@@ -350,8 +374,8 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     this->ayuda = new Ayuda();
     connect(ui->actionAyuda_de_aShot, SIGNAL(triggered()), this->ayuda, SLOT(show()));
     ui->menuAjustes->setEnabled(false);
-    this->bc = new BrilloContraste(); //esto se hara una vez abierta la imagen
-    connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this->bc, SLOT(show()));
+   //bc
+    connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this, SLOT(showNewBC()));
     ui->actionBrillo_Contraste->setEnabled(false);
 
     connect(ui->actionAjustar_a_ventana, SIGNAL(triggered()), this, SLOT(fitToWindow()));
