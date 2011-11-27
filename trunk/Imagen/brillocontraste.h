@@ -3,6 +3,9 @@
 
 #include <QWidget>
 #include "imagen.h"
+//#include "ashot.h"
+
+//class aShot; //dado que es una dependencia ciclica, se pone asi e indica que ya se definira mas tarde
 
 namespace Ui {
     class BrilloContraste;
@@ -13,19 +16,25 @@ class BrilloContraste : public QWidget
     Q_OBJECT
 
 public:
-    explicit BrilloContraste(QWidget *parent = 0);
+    explicit BrilloContraste(QWidget *parent = 0, Imagen * imagen = NULL, QLabel * label = NULL);
     ~BrilloContraste();
 
+    Imagen * imagenOriginal;
+    Imagen * imagenAux; //imagen auxiliar para volcar en imagelabel de aShot los cambios que se hagan al cambiar valores de brillo y contraste
+    QLabel * imageLabel;
+    //aShot * shot; //solo coge el puntero de la apliacion principal para poder modificar la imagelabel y su imagen
 
 
 public slots:
-    void setValues(Imagen * imagen);
-    void AplicarCambios();
+    void setValues(Imagen * imagen, QLabel * label);
+    void changeImageLabel();
+    void aplicarCambios();
+    void cancelar();
+    void reiniciar();
 
 private:
     Ui::BrilloContraste *ui;
-    //int Brillo;
-    //int Contraste;
+
 
 signals:
     void updateSliderB(int);
@@ -33,6 +42,7 @@ signals:
 
     void updateSliderC(int);
     void updateSpinBoxC(double);
+    void closed();
 
 private slots:
     void intToDoubleB(int value);

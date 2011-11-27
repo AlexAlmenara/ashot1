@@ -11,7 +11,7 @@ Imagen::Imagen() {
         err = 1;
     else
         err = 0;
-    createHist();
+    update();
 }
 
 
@@ -24,7 +24,7 @@ Imagen::Imagen(QString fileName) {
         err = 1;
     else
         err = 0;
-    createHist();
+    update();
 }
 
 
@@ -40,10 +40,8 @@ void Imagen::createHist() {
         Mniveles = 256;
          else Mniveles = 2; //error
 
-    printf("entro2");
     Mniveles = 256;
     hist = new int [Mniveles];
-    printf("ya creado");
     acum = new int [Mniveles];
     for (int i = 0; i < Mniveles; i++) {
         hist[i] = 0;

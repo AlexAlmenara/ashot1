@@ -20,13 +20,16 @@ class aShot : public QMainWindow
 public:
     explicit aShot(QWidget *parent = 0);
     ~aShot();
+    void updateImageLabel();
+
+    Imagen * imagen;
 
 private:
     Ui::aShot *ui;
     BrilloContraste * bc;
     Ayuda * ayuda;
     aShot * a;
-    Imagen * imagen;
+
     double scaleFactor;
     //bool hasImage;
 
@@ -40,7 +43,6 @@ private:
     void updateZoomActions();
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
-    void updateImageLabel();
 
 
 private slots:
@@ -58,6 +60,10 @@ private slots:
     void guardarComo();
     void toGray(); //convierte imagen a escala de grises
     void negativo(); //convierte imagen a negativo
+
+    //para sacar widgets
+    void showNewBC(); //crea bc y lo muestra
+    void aplicarBC(); //aplica los cambios hechos despues de cerrar el widget BrilloContraste
 
     void prueba();
     void prueba2();

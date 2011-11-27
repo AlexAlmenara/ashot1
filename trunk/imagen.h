@@ -23,7 +23,7 @@ public:
     Imagen();
     Imagen(QString fileName);
 
-    QImage * qimage;
+    QImage qimage;
 
     int error(); //se saca el error para que lo lea aShot y sace un MessageBox
     int M(); //numero total de niveles
