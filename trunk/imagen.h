@@ -22,13 +22,15 @@ private:
 public:
     Imagen();
     Imagen(QString fileName);
+    //Imagen(QImage qimage); //estaria bien este constructor si al menos QImage tuviera el metodo fileName() xDD
 
     QImage qimage;
 
     int error(); //se saca el error para que lo lea aShot y sace un MessageBox
     int M(); //numero total de niveles
-    int max();
-    int min();
+    int maxh(); //maximo valor de frecuencia (sin saber de q nivel es, es solo para saber dibujar histograma
+    int maxRango(); //rango dinamico: [min, max]
+    int minRango();
     double brillo();
     double contraste();
     double entropia();
@@ -38,16 +40,22 @@ public:
     int hAcum(int i); //frecuencia acumulada del nivel i
     double hAcumNorm(int i); //frecuencia acumulada NORMALIZADO del nivel i
 
+    int negativo(int vin); //negativo del nivel vin
+
     int height();
     int width();
     int size();
 
     void update(); //actualiza info asociada a imagen: vector hist
     void transformar(int * vout); //trasnforma una imagen con una tabla LUT dada, es decir, vector vout
-    //int pixel(int x, int y);
+
+    int perfil(int x, int y);
+    int perfil(int i);
+
+    int dperfil(int i);
     //void setPixel(int value);
 
-    QImage qImage();
+    //QImage qImage();
     QString fileName();
     QString extension();
     QString formato();

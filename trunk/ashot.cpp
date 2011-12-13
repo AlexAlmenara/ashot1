@@ -1,6 +1,7 @@
 #include "ashot.h"
 #include "ui_ashot.h"
 
+#include <math.h>
 //#include <iostream>
 //#include <stdio.h>
 //#include <stdlib.h>
@@ -43,6 +44,8 @@ aShot::aShot(QWidget *parent) :
     //setWindowTitle(tr("aShot 1.0")); //se hace tambien con Qt Designer
     resize(500, 400);
 
+    hasImage = false;
+
     connectActions();
     abrir(); //para acelerar la depuracion
 
@@ -55,7 +58,7 @@ aShot::~aShot()
 
 
 void aShot::updateImageLabel() {
-    ui->imageLabel->setPixmap(QPixmap::fromImage(imagen->qImage()));
+    ui->imageLabel->setPixmap(QPixmap::fromImage(imagen.qimage));
     scaleFactor = 1.0;
 
     if (!ui->actionAjustar_a_ventana->isChecked())
@@ -65,23 +68,30 @@ void aShot::updateImageLabel() {
 
 //slots:
 
-void aShot::createNewWindow() {
-    this->a = new aShot();
-    this->a->show();
+void aShot::abrirNew() {
+    if (!this->hasImage)
+        abrir();
+    else {
+        this->a = new aShot();
+        this->a->show();
+        this->a->abrir();
+    }
 }
 
 void aShot::cerrarTodo() {
     qApp->closeAllWindows();
     ui->imageLabel->setPixmap(NULL);
     this->show();
+    //imagen = nada, no hace falta
+    hasImage = false;
 }
 
 void aShot::abrir() {
     QString fileName = "/home/alex/Escritorio/huevoo.tif"; //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //
 
     if (!fileName.isEmpty()) {
-        imagen = new Imagen(fileName);
-        if (imagen->isNull()) {
+        imagen = Imagen(fileName);
+        if (imagen.isNull()) {
             QMessageBox::information(this, tr("aShot Abrir"), tr("No se puede cargar %1.").arg(fileName));
             return;
         }
@@ -89,22 +99,21 @@ void aShot::abrir() {
         enableActions();
         updateZoomActions();
         updateImageLabel();
-
-        //bc->setValues(imagen);
+        hasImage = true;
     }
 }
 
 
 
 void aShot::guardar() {
-    const QString fileName = imagen->fileName();
-    imagen->qimage->save(fileName, 0, -1);
+    const QString fileName = imagen.fileName();
+    imagen.qimage.save(fileName, 0, -1);
 }
 
 
 void aShot::guardarComo() {
     const QString fileName = QFileDialog::getSaveFileName(this, tr("Guardar archivo"), QDir::currentPath());
-    imagen->qimage->save(fileName, 0, -1);
+    imagen.qimage.save(fileName, 0, -1);
     /* QMessageBox::information(this, tr("aShot Guardar"), tr("No se puede Guardar %1.").arg(fileName));
         return;
     }*/
@@ -153,29 +162,30 @@ void aShot::fitToWindow() {
 
 
 void aShot::info_imagen() {
-    if (imagen == NULL)
+    /*if (imagen == NULL)
         QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
-    else
-    if (imagen->isNull())
+    else*/
+
+    if (imagen.isNull())
         QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
     else {
         //itoa(image->height(), buffer, 10);
-        //QRgb pix = imagen->qimage->pixel(4, 5);
+        //QRgb pix = imagen.qimage.pixel(4, 5);
         //int val = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
         //tambien esta qGreen, qRed, qBlue
         /*ostringstream s;
-        s << imagen->entropia();
+        s << imagen.entropia();
         string cadena = s.str();*/
 
         QMessageBox::information(this, tr("Informacion de la imagen"),
-                                 "Nombre del fichero: " + imagen->fileName()
-                                 + "\nExtension: " + imagen->extension()
-                                 + "\nError: " + QString::number(imagen->error())
-                                 + "\nDimension en pixeles: " + QString::number(imagen->width()) + " x " + QString::number(imagen->height()) + " pixeles \nSize: " + QString::number(imagen->size())
-                                 + "pixeles \nFormato: " + imagen->formato()
-                                 + "\nBrillo: " + QString::number(imagen->brillo())  + "\nContraste: " + QString::number(imagen->contraste())
-                                 +"\nEntropia: " + QString::number(imagen->entropia())
-                                 + "\nRango Dinamico: [" + QString::number(imagen->min()) + ".." + QString::number(imagen->max()) + "]\n");
+                                 "Nombre del fichero: " + imagen.fileName()
+                                 + "\nExtension: " + imagen.extension()
+                                 + "\nError: " + QString::number(imagen.error())
+                                 + "\nDimension en pixeles: " + QString::number(imagen.width()) + " x " + QString::number(imagen.height()) + " pixeles \nSize: " + QString::number(imagen.size())
+                                 + "pixeles \nFormato: " + imagen.formato()
+                                 + "\nBrillo: " + QString::number(imagen.brillo())  + "\nContraste: " + QString::number(imagen.contraste())
+                                 +"\nEntropia: " + QString::number(imagen.entropia())
+                                 + "\nRango Dinamico: [" + QString::number(imagen.minRango()) + ".." + QString::number(imagen.maxRango()) + "]\n");
 
     }
 
@@ -203,83 +213,122 @@ void aShot::acercade() {
 void aShot::toGray() {
     //QVector<QRgb> tabla = QVector<QRgb>();
     //tabla.append(pix);
-    //pix = imagen->qimage->color(indice); //devuelve rgb del indice de tabla indexada
-    //indice = imagen->qimage->pixelIndex(i, j); //devuelve el indice de la tabla indexada
+    //pix = imagen.qimage.color(indice); //devuelve rgb del indice de tabla indexada
+    //indice = imagen.qimage.pixelIndex(i, j); //devuelve el indice de la tabla indexada
 
     QRgb pix;
     int value;
-    for (int i = 0; i < imagen->width(); i++) // igual: qimage->width()
-        for (int j = 0; j < imagen->height(); j++) {
-            pix = imagen->qimage->pixel(i, j);
+    for (int i = 0; i < imagen.width(); i++) // igual: qimage.width()
+        for (int j = 0; j < imagen.height(); j++) {
+            pix = imagen.qimage.pixel(i, j);
             value = (int) (0.299 * (double) qRed(pix) + 0.587 * (double) qGreen(pix) + 0.114 * (double) qBlue(pix)); //NTSC
             //value = qGray(pix); //es casi equivalente
-            if (value > imagen->M() - 1)
-                value = imagen->M() - 1;
+            if (value > imagen.M() - 1)
+                value = imagen.M() - 1;
 
             if (value < 0)
                 value = 0;
 
             pix = qRgb(value, value, value);
-            imagen->qimage->setPixel(i, j, pix); //escritura tipo imagen RGB, diferente de 8 bits indexado
+            imagen.qimage.setPixel(i, j, pix); //escritura tipo imagen RGB, diferente de 8 bits indexado
         }
 
-    *imagen->qimage = imagen->qimage->convertToFormat(QImage::Format_Indexed8); //3: escala de grises indexado
+    imagen.qimage = imagen.qimage.convertToFormat(QImage::Format_Indexed8); //3: escala de grises indexado
 
-    imagen->update();
+    imagen.update();
     updateImageLabel();
     ui->actionToGray->setEnabled(false);
 }
 
 
 void aShot::negativo() {
-    imagen->qimage->invertPixels(); //el negativo de la imagen
-    imagen->update();
+    imagen.qimage.invertPixels(); //el negativo de la imagen. tambien se podria con un bucle con imagen.negativo(vin)
+    imagen.update();
     updateImageLabel();
 }
 
+
+//slots de tratamiento para ventanitas de edicion de imagen
 
 void aShot::showNewBC() { //crea bc y lo muestra
     bc = new BrilloContraste(0, imagen, ui->imageLabel);
     //this->bc = new BrilloContraste(this); //esto se hara una vez abierta la imagen
     //connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this->bc, SLOT(show()));
-    connect(bc, SIGNAL(closed()), this, SLOT(aplicarBC()));
+    connect(bc, SIGNAL(closed()), this, SLOT(applyDestroyBC()));
     bc->show();
 }
 
 
-void aShot::aplicarBC() {
+void aShot::applyDestroyBC() {
     //printf("aplicarrr");
     //delete imagen;
-    *imagen = *bc->imagenAux;
-    //imagen = new Imagen(bc->imagenAux->fileName()); //tambien pasa si se cancela, pero no importa, en ese caso imageAux seria la imagen original
+    imagen = bc->imagenAux; //tambien pasa si se cancela, pero no importa, en ese caso imageAux seria la imagen original
+    //imagen = new Imagen(bc->imagenAux->fileName());
     delete bc;
 }
 
 
+void aShot::showNewLogexp() {
+    logexp = new Logexp(0, imagen, ui->imageLabel);
+    connect(logexp, SIGNAL(closed()), this, SLOT(applyDestroyLogexp()));
+    logexp->show();
+}
+
+void aShot::applyDestroyLogexp() {
+    imagen = logexp->imagenAux;
+    //updateImageLabel(); //ya lo hace logexp
+    delete logexp;
+}
+
+
+void aShot::showNewTramos() {
+    tramos = new Tramos(0, imagen);
+    connect(tramos, SIGNAL(closed()), this, SLOT(applyDestroyTramos()));
+    tramos->show();
+}
+
+void aShot::applyDestroyTramos() {
+    imagen = tramos->imagenAux;
+    updateImageLabel(); //ya lo hace logexp
+    //delete tramos;
+}
+
+
+
+void aShot::showNewHistograma() {
+    histograma = new Histograma(0, imagen);
+    histograma->show();
+}
+
+
+void aShot::showNewPerfil() {
+    perfil = new Perfil(0, imagen);
+    perfil->show();
+}
 
 
 void aShot::prueba() {
-    if (imagen->qimage->format() != 3) { //8-bit indexado, monocromo
+    if (imagen.qimage.format() != 3) { //8-bit indexado, monocromo
         QMessageBox::information(this, tr("Informacion de la imagen"), "no es monocromo indexado");
         return;
     }
 
     /*QRgb value;
     value = qRgb(122, 163, 39); // 0xff7aa327
-    imagen->qimage->setColor(0, value);
+    imagen.qimage.setColor(0, value);
 
     value = qRgb(237, 187, 51); // 0xffedba31
-    imagen->qimage->setColor(1, value);
+    imagen.qimage.setColor(1, value);
 
     //value = qRgb(189, 149, 39); // 0xffbd9527
     //image.setColor(2, value);
 
-    for (int i = 0; i < imagen->width(); i++)
-        for (int j = 0; j < imagen->height(); j++) {
+    for (int i = 0; i < imagen.width(); i++)
+        for (int j = 0; j < imagen.height(); j++) {
             if (i == j)
-                imagen->qimage->setPixel(i, j, 0);
+                imagen.qimage.setPixel(i, j, 0);
             else
-                imagen->qimage->setPixel(i, j, 1);
+                imagen.qimage.setPixel(i, j, 1);
         }
     */
 
@@ -289,7 +338,7 @@ void aShot::prueba() {
     int * extremos = new int [ntramos]; //seria ntramos -1, pero se queda uno mas para q no se qede size 0 en caso de q ntramos=1
     int tramo_i = 0; //tramo actual
     //tambien: Qimage.setColorTable(QVector<QRgb>)
-    int * vout = new int [imagen->M()]; //tabla LUT
+    int * vout = new int [imagen.M()]; //tabla LUT
 
     //intro datos
     A[0] = 3; B[0] = 2;
@@ -298,63 +347,44 @@ void aShot::prueba() {
     extremos[0] = 20; //nivel 20
     extremos[1] = 180;
     //fin intro datos
-    for (int vin = 0; vin < imagen->M(); vin++) {
+    for (int vin = 0; vin < imagen.M(); vin++) {
 
         if (ntramos > 1)
             if (vin == extremos[tramo_i])
                 tramo_i++; //siguiente tramo
 
         vout[vin] = (int) (A[tramo_i] * (double) vin + B[tramo_i]);
-        if (vout[vin] > imagen->M() - 1) //en caso de que se haya salido del rango de niveles (0..255)
-            vout[vin] = imagen->M() - 1;
+        if (vout[vin] > imagen.M() - 1) //en caso de que se haya salido del rango de niveles (0..255)
+            vout[vin] = imagen.M() - 1;
         else
             if (vout[vin] < 0)
                 vout[vin] = 0;
     }
 
-     imagen->transformar(vout);
+     imagen.transformar(vout);
      updateImageLabel();  //actualiza label
 
  }
 
 
-void aShot::prueba2() {
-    double brillo2 = 100.0, contraste2 = 30.0; //tambien: Qimage.setColorTable(QVector<QRgb>)
-    double A = contraste2 / imagen->contraste();
-    double B = brillo2 - A * imagen->brillo();
 
-    int * vout = new int [imagen->M()]; //tabla LUT
-    for (int vin = 0; vin < imagen->M(); vin++) {
-        vout[vin] = (int) (A * (double) vin + B);
-        if (vout[vin] > imagen->M() - 1)
-            vout[vin] = imagen->M() - 1;
-        else
-            if (vout[vin] < 0)
-                vout[vin] = 0;
-    }
+void aShot::ecualizar() { //ecualizacion del histograma: aproximacion de distribucion uniforme, mantiene entropia
 
-
-    imagen->transformar(vout);
-    updateImageLabel();//actualiza label
-}
-
-
-void aShot::prueba3() { //ecualizacion del histograma: aproximacion de distribucion uniforme, mantiene entropia
-
-    int * vout = new int [imagen->M()]; //tabla LUT
-    for (int vin = 0; vin < imagen->M(); vin++) {
-        vout[vin] = 4; //normal:sdf
+    int * vout = new int [imagen.M()]; //tabla LUT
+    for (int vin = 0; vin < imagen.M(); vin++) {
+        vout[vin] = (int) (imagen.hAcum(vin) * ((double) imagen.M() / (double) imagen.size()));
+        vout[vin] = (int) (floor((double) vout[vin]) - 1.0);
         if (vout[vin] < 0)
             vout[vin] = 0; //vout = max(0, expresion anterior);
 
-        if (vout[vin] > imagen->M() - 1)
-            vout[vin] = imagen->M() - 1;
+        if (vout[vin] > imagen.M() - 1)
+            vout[vin] = imagen.M() - 1;
         else
             if (vout[vin] < 0)
                 vout[vin] = 0;
     }
 
-    imagen->transformar(vout);
+    imagen.transformar(vout);
     updateImageLabel();//actualiza label
 }
 
@@ -364,7 +394,7 @@ void aShot::prueba3() { //ecualizacion del histograma: aproximacion de distribuc
 void aShot::connectActions() {   //conecta acciones. las que haga falta una imagen abierta empiezan desactivadas
     connect(ui->action_Salir, SIGNAL(triggered()), qApp, SLOT(quit())); //es igual que ponerlo en el Signal/Slot Editor
     //connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(createNewWindow()));
-    connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(abrir()));
+    connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(abrirNew()));
     connect(ui->action_Cerrar, SIGNAL(triggered()), this, SLOT(close()));
     ui->action_Cerrar->setEnabled(false);
     connect(ui->actionCerrar_todo, SIGNAL(triggered()), this, SLOT(cerrarTodo()));
@@ -377,6 +407,10 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
    //bc
     connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this, SLOT(showNewBC()));
     ui->actionBrillo_Contraste->setEnabled(false);
+    connect(ui->actionLog_Exp, SIGNAL(triggered()), this, SLOT(showNewLogexp()));
+    ui->actionLog_Exp->setEnabled(false);
+    connect(ui->actionTramos, SIGNAL(triggered()), this, SLOT(showNewTramos()));
+    ui->actionTramos->setEnabled(false);
 
     connect(ui->actionAjustar_a_ventana, SIGNAL(triggered()), this, SLOT(fitToWindow()));
     ui->actionAjustar_a_ventana->setEnabled(false);
@@ -407,6 +441,15 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionNegativo, SIGNAL(triggered()), this, SLOT(negativo()));
     ui->actionNegativo->setEnabled(false);
 
+    connect(ui->actionEcualizar, SIGNAL(triggered()), this, SLOT(ecualizar()));
+    ui->actionEcualizar->setEnabled(false);
+
+    connect(ui->action_Histograma, SIGNAL(triggered()), this, SLOT(showNewHistograma()));
+    ui->action_Histograma->setEnabled(false);
+
+    connect(ui->actionPerfil, SIGNAL(triggered()), this, SLOT(showNewPerfil()));
+    ui->actionPerfil->setEnabled(false);
+
     connect(ui->actionPrueba, SIGNAL(triggered()), this, SLOT(prueba())); //prueba: cuidado no se ha hecho el enable false y luego true
 
 }
@@ -414,6 +457,9 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
 void aShot::enableActions() {
     ui->menuAjustes->setEnabled(true);
     ui->actionBrillo_Contraste->setEnabled(true);
+    ui->actionLog_Exp->setEnabled(true);
+    ui->actionTramos->setEnabled(true);
+
     ui->actionAjustar_a_ventana->setEnabled(true);
     ui->action_Cerrar->setEnabled(true);
     ui->actionCerrar_todo->setEnabled(true);
@@ -422,8 +468,11 @@ void aShot::enableActions() {
     ui->actionIm_primir->setEnabled(true);
     ui->action_Informacion_imagen->setEnabled(true);
     ui->actionNegativo->setEnabled(true);
+    ui->actionEcualizar->setEnabled(true);
+    ui->action_Histograma->setEnabled(true);
+    ui->actionPerfil->setEnabled(true);
 
-    if (imagen->qimage->format() != 3) //si no es en escala de grises se habilita
+    if (imagen.qimage.format() != 3) //si no es en escala de grises se habilita
         ui->actionToGray->setEnabled(true);
 }
 

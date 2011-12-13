@@ -5,9 +5,13 @@
 #include <QPrinter>
 #include <QtGui>
 
-#include "Imagen/brillocontraste.h"
 #include "Ayuda/ayuda.h"
 #include "imagen.h"
+#include "Imagen/brillocontraste.h"
+#include "Imagen/logexp.h"
+#include "Imagen/histograma.h"
+#include "Imagen/perfil.h"
+#include "Imagen/tramos.h"
 
 namespace Ui {
     class aShot;
@@ -20,18 +24,25 @@ class aShot : public QMainWindow
 public:
     explicit aShot(QWidget *parent = 0);
     ~aShot();
+
+    void abrir();
     void updateImageLabel();
 
-    Imagen * imagen;
+    Imagen imagen;
 
 private:
     Ui::aShot *ui;
     BrilloContraste * bc;
     Ayuda * ayuda;
+    Logexp * logexp;
+    Histograma * histograma;
+    Perfil * perfil;
+    Tramos * tramos;
+
     aShot * a;
 
     double scaleFactor;
-    //bool hasImage;
+    bool hasImage;
 
 
 #ifndef QT_NO_PRINTER
@@ -46,8 +57,7 @@ private:
 
 
 private slots:
-    void createNewWindow();
-    void abrir();
+    void abrirNew();
     void cerrarTodo();
     void imprimir();
     void zoomIn();
@@ -63,11 +73,17 @@ private slots:
 
     //para sacar widgets
     void showNewBC(); //crea bc y lo muestra
-    void aplicarBC(); //aplica los cambios hechos despues de cerrar el widget BrilloContraste
+    void applyDestroyBC(); //aplica los cambios hechos despues de cerrar el widget BrilloContraste
+    void showNewLogexp();
+    void applyDestroyLogexp();
+    void showNewTramos();
+    void applyDestroyTramos();
+
+    void showNewHistograma();
+    void showNewPerfil();
 
     void prueba();
-    void prueba2();
-    void prueba3();
+    void ecualizar();
 
 
 };

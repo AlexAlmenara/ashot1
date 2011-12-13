@@ -6,7 +6,7 @@
 using namespace std;
 
 Imagen::Imagen() {
-    qimage = new QImage();
+    qimage = QImage();
     if (this->isNull())
         err = 1;
     else
@@ -18,7 +18,7 @@ Imagen::Imagen() {
 
 
 Imagen::Imagen(QString fileName) {
-    qimage = new QImage(fileName);
+    qimage = QImage(fileName);
     this->file = fileName;
     if (this->isNull())
         err = 1;
@@ -29,14 +29,15 @@ Imagen::Imagen(QString fileName) {
 
 
 
+
 int Imagen::error() {
     return err;
 }
 
 void Imagen::createHist() {
-    if (qimage->format() == 3) //8 bits indexado, monocromo
+    if (qimage.format() == 3) //8 bits indexado, monocromo
         Mniveles = 256;
-    else if (qimage->format() == 4) //32 bits, RGB
+    else if (qimage.format() == 4) //32 bits, RGB
         Mniveles = 256;
          else Mniveles = 2; //error
 
@@ -48,7 +49,7 @@ void Imagen::createHist() {
         acum[i] = 0;
     }
 
-    if ((qimage->format() != 3) && (qimage->format() != 4)) { //8-bit indexado, monocromo, o RGB 32 bits
+    if ((qimage.format() != 3) && (qimage.format() != 4)) { //8-bit indexado, monocromo, o RGB 32 bits
         err = 1; //error
         return;
     }
@@ -60,7 +61,7 @@ void Imagen::createHist() {
     //se crea hist
     for (int i = 0; i < this->width(); i++) // igual: qimage->width()
         for (int j = 0; j < this->height(); j++) {
-            pix = qimage->pixel(i, j);
+            pix = qimage.pixel(i, j);
             val = qGray(pix);
             hist[val]++; //frecuencia absoluta de nivel de gris val
         }
@@ -87,8 +88,8 @@ void Imagen::transformar(int * vout) {
     int vin; // = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
     for (int i = 0; i < width(); i++)
         for (int j = 0; j < height(); j++) {
-            vin = qGray(qimage->pixel(i, j));
-            qimage->setPixel(i, j, vout[vin]); //ya se garantiza que el tamaño de vout es de M elementos
+            vin = qGray(qimage.pixel(i, j));
+            qimage.setPixel(i, j, vout[vin]); //ya se garantiza que el tamaño de vout es de M elementos
         }
 
     update();
@@ -98,7 +99,7 @@ int Imagen::M() { //numero total de niveles
     return Mniveles;
 }
 
-int Imagen::max() {
+int Imagen::maxh() {
     int maximo = hist[0];
     for (int i = 0; i < M(); i++)
         if (maximo < hist[i])
@@ -106,12 +107,18 @@ int Imagen::max() {
     return maximo;
 }
 
-int Imagen::min() {
-    int minimo = hist[0];
+int Imagen::maxRango() {
+    for (int i = M() - 1; i >= 0; i--)
+        if (hist[i] > 0)
+            return i; //devuelve el primer nivel distinto de 0
+    return 0; //por seguridad, si todos son 0
+}
+
+int Imagen::minRango() {
     for (int i = 0; i < M(); i++)
-        if ((minimo > hist[i]) && (hist[i] > 0)) //no se cuenta el 0
-            minimo = hist[i];
-    return minimo;
+        if (hist[i] > 0)
+            return i; //devuelve el primer nivel distinto de 0
+    return 0; //por seguridad, si todos son 0
 }
 
 double Imagen::brillo() { //media de valores
@@ -158,6 +165,11 @@ double Imagen::entropia() {
 }
 
 
+
+int Imagen::negativo(int vin) {
+    return M() - 1 - vin; //inverso de vin: 255 - vin
+}
+
 int Imagen::hAbs(int i) {
     return hist[i];
 }
@@ -177,11 +189,11 @@ double Imagen::hAcumNorm(int i) {
 
 
 int Imagen::height() {
-    return qimage->height();
+    return qimage.height();
 }
 
 int Imagen::width() {
-    return qimage->width();
+    return qimage.width();
 }
 
 int Imagen::size() { //numero total de pixeles
@@ -191,11 +203,28 @@ int Imagen::size() { //numero total de pixeles
 /* int Imagen::pixel(int x, int y);
 void Imagen::setPixel(int x, int y, int value) {
     qimage.setPixel(x, y, value);
-}*/
+}
 
 
 QImage Imagen::qImage() {
     return *qimage;
+}*/
+
+
+int Imagen::perfil(int i) {
+    return qGray(qimage.color(i));
+}
+
+int Imagen::perfil(int x, int y) {
+    return qGray(qimage.pixel(x, y));
+}
+
+
+int Imagen::dperfil(int i) {
+    if ((i == 0) || (i == size()))
+        return perfil(i);
+
+    return perfil(i + 1) - perfil(i);
 }
 
 QString Imagen::fileName() {
@@ -208,7 +237,7 @@ QString Imagen::extension() {
 
 QString Imagen::formato() {
     QString format;
-    switch (qimage->format()) {
+    switch (qimage.format()) {
         case 0: format = "The image is invalid";
         case 1: format = "The image#include <iostream> is stored using 1-bit per pixel. Bytes are packed with the most significant bit (MSB) first."; break;
     case 2: format = "The image is stored using 1-bit per pixel. Bytes are packed with the less significant bit (LSB) first."; break;
@@ -223,11 +252,11 @@ QString Imagen::formato() {
 }
 
 bool Imagen::isNull() {
-    if (qimage == NULL)
+    /*if (qimage == NULL)
+        return true;
+    else*/
+    if (qimage.isNull())
         return true;
     else
-        if (qimage->isNull())
-            return true;
-        else
-            return false;
+        return false;
 }
