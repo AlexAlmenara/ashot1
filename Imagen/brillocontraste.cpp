@@ -1,7 +1,7 @@
 #include "brillocontraste.h"
 #include "ui_brillocontraste.h"
 
-BrilloContraste::BrilloContraste(QWidget *parent, Imagen * imagen, QLabel * label) :
+BrilloContraste::BrilloContraste(QWidget *parent, Imagen imagen, QLabel * label) :
     QWidget(parent),
     ui(new Ui::BrilloContraste)
 {
@@ -48,22 +48,21 @@ BrilloContraste::~BrilloContraste() {
 }
 
 
-void BrilloContraste::setValues(Imagen * imagen, QLabel * label) {
-    printf("setValues\n");
+void BrilloContraste::setValues(Imagen imagen, QLabel * label) {
     //brillo
-    ui->SliderBrillo->setRange(0, imagen->M() - 1);
-    ui->SliderBrillo->setValue(imagen->brillo());
-    ui->doubleSpinBoxBrillo->setRange(0.0, (double) imagen->M() - 1);
-    ui->doubleSpinBoxBrillo->setValue(imagen->brillo());
+    ui->SliderBrillo->setRange(0, imagen.M() - 1);
+    ui->SliderBrillo->setValue(imagen.brillo());
+    ui->doubleSpinBoxBrillo->setRange(0.0, (double) imagen.M() - 1);
+    ui->doubleSpinBoxBrillo->setValue(imagen.brillo());
 
     //contraste
-    ui->SliderContraste->setRange(0, imagen->M() - 1); //???
-    ui->SliderContraste->setValue(imagen->contraste());
-    ui->doubleSpinBoxContraste->setRange(0.0, (double) imagen->M() - 1);
-    ui->doubleSpinBoxContraste->setValue(imagen->contraste());
+    ui->SliderContraste->setRange(0, (int) ((double) imagen.M() / 2.0) );
+    ui->SliderContraste->setValue(imagen.contraste());
+    ui->doubleSpinBoxContraste->setRange(0.0, ((double) imagen.M() / 2.0) );
+    ui->doubleSpinBoxContraste->setValue(imagen.contraste());
 
-    imagenOriginal = new Imagen(imagen->fileName()); //se igualan los punteros
-    imagenAux =  new Imagen(imagen->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
+    imagenOriginal = imagen; //Imagen(imagen.fileName()); //se igualan los punteros
+    imagenAux =  imagen; //new Imagen(imagen->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
     imageLabel = label; //se igualan los punteros: ambos apuntan a la misma label donde se pinta la imagen
 }
 
@@ -95,26 +94,26 @@ void BrilloContraste::DoubleToIntC(double value) {
 
 //cambios de imagen y label
 void BrilloContraste::changeImageLabel() {
-    imagenAux =  new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
+    imagenAux =  imagenOriginal; //new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
 
     double brillo2 = ui->doubleSpinBoxBrillo->value();
     double contraste2 = ui->doubleSpinBoxContraste->value(); //tambien: Qimage.setColorTable(QVector<QRgb>)
-    double A = contraste2 / imagenAux->contraste();
-    double B = brillo2 - A * imagenAux->brillo();
+    double A = contraste2 / imagenAux.contraste();
+    double B = brillo2 - A * imagenAux.brillo();
 
-    int * vout = new int [imagenAux->M()]; //tabla LUT
-    for (int vin = 0; vin < imagenAux->M(); vin++) {
+    int * vout = new int [imagenAux.M()]; //tabla LUT
+    for (int vin = 0; vin < imagenAux.M(); vin++) {
         vout[vin] = (int) (A * (double) vin + B);
-        if (vout[vin] > imagenAux->M() - 1)
-            vout[vin] = imagenAux->M() - 1;
+        if (vout[vin] > imagenAux.M() - 1)
+            vout[vin] = imagenAux.M() - 1;
         else
             if (vout[vin] < 0)
                 vout[vin] = 0;
     }
 
 
-    imagenAux->transformar(vout); //transformacion. tambien hace el update de histograma
-    imageLabel->setPixmap(QPixmap::fromImage(imagenAux->qImage())); //shot->updateImageLabel();//actualiza label
+    imagenAux.transformar(vout); //transformacion. tambien hace el update de histograma
+    imageLabel->setPixmap(QPixmap::fromImage(imagenAux.qimage)); //shot->updateImageLabel();//actualiza label
 }
 
 
@@ -137,8 +136,8 @@ void BrilloContraste::aplicarCambios() {
 
 
 void BrilloContraste::cancelar() {
-    imageLabel->setPixmap(QPixmap::fromImage(imagenOriginal->qImage())); //shot->updateImageLabel();//actualiza label
-    imagenAux =  new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
+    imageLabel->setPixmap(QPixmap::fromImage(imagenOriginal.qimage)); //shot->updateImageLabel();//actualiza label
+    imagenAux =  imagenOriginal; //new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
     close();
     emit(closed()); //se emite signal
     //delete this;
@@ -146,13 +145,13 @@ void BrilloContraste::cancelar() {
 
 
 void BrilloContraste::reiniciar() {
-    imageLabel->setPixmap(QPixmap::fromImage(imagenOriginal->qImage())); //shot->updateImageLabel();//actualiza label
+    imageLabel->setPixmap(QPixmap::fromImage(imagenOriginal.qimage)); //shot->updateImageLabel();//actualiza label
 
-    //ui->SliderBrillo->setValue(imagenOriginal->brillo());
+    //ui->SliderBrillo->setValue(imagenOriginal->brillo()); //no hace falta, ya se igualan a los spinBox
     //ui->SliderContraste->setValue(imagenOriginal->brillo());
-    ui->doubleSpinBoxBrillo->setValue(imagenOriginal->brillo());
-    ui->doubleSpinBoxContraste->setValue(imagenOriginal->contraste());
-    imagenAux =  new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
+    ui->doubleSpinBoxBrillo->setValue(imagenOriginal.brillo());
+    ui->doubleSpinBoxContraste->setValue(imagenOriginal.contraste());
+    imagenAux = imagenOriginal; //new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
 }
 
 

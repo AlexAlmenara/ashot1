@@ -107,8 +107,11 @@
       <string>Ajustes</string>
      </property>
      <addaction name="actionBrillo_Contraste"/>
+     <addaction name="actionTramos"/>
      <addaction name="actionToGray"/>
      <addaction name="actionNegativo"/>
+     <addaction name="actionEcualizar"/>
+     <addaction name="actionLog_Exp"/>
     </widget>
     <addaction name="menuAjustes"/>
     <addaction name="separator"/>
@@ -117,7 +120,10 @@
     <addaction name="actionTama_o_normal"/>
     <addaction name="separator"/>
     <addaction name="actionAjustar_a_ventana"/>
+    <addaction name="separator"/>
     <addaction name="action_Informacion_imagen"/>
+    <addaction name="action_Histograma"/>
+    <addaction name="actionPerfil"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -268,6 +274,31 @@
   <action name="actionNegativo">
    <property name="text">
     <string>Negativo</string>
+   </property>
+  </action>
+  <action name="actionEcualizar">
+   <property name="text">
+    <string>Ecualizar</string>
+   </property>
+  </action>
+  <action name="actionLog_Exp">
+   <property name="text">
+    <string>Log/Exp</string>
+   </property>
+  </action>
+  <action name="action_Histograma">
+   <property name="text">
+    <string>&amp;Histograma</string>
+   </property>
+  </action>
+  <action name="actionPerfil">
+   <property name="text">
+    <string>Perfil</string>
+   </property>
+  </action>
+  <action name="actionTramos">
+   <property name="text">
+    <string>Tramos</string>
    </property>
   </action>
  </widget>

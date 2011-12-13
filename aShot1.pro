@@ -14,19 +14,43 @@ SOURCES += main.cpp\
         ashot.cpp \
     Ayuda/ayuda.cpp \
     Imagen/brillocontraste.cpp \
-    imagen.cpp
+    imagen.cpp \
+    Imagen/logexp.cpp \
+    Imagen/histograma.cpp \
+    Imagen/perfil.cpp \
+    Imagen/tramos.cpp
 
 HEADERS  += ashot.h \
     Ayuda/ayuda.h \
     Imagen/brillocontraste.h \
-    imagen.h
+    imagen.h \
+    Imagen/logexp.h \
+    Imagen/histograma.h \
+    Imagen/perfil.h \
+    Imagen/tramos.h
 
 FORMS    += ashot.ui \
     Ayuda/ayuda.ui \
-    Imagen/brillocontraste.ui
+    Imagen/brillocontraste.ui \
+    Imagen/logexp.ui \
+    Imagen/histograma.ui \
+    Imagen/perfil.ui \
+    Imagen/tramos.ui
 
 RESOURCES += \
     resources/aShotResources.qrc
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
