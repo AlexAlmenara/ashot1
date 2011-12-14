@@ -24,14 +24,11 @@ Histograma::~Histograma()
 void Histograma::paintEvent(QPaintEvent * /* event */) {
 
     QPainter painter(this);
-    pen = QPen(Qt::green, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    pen = QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
     painter.setPen(pen);
     painter.scale(1.0, -1.0); //invierte y
     painter.translate(0.0, (double) -height()); //el (0, 0) esta abajo como solemos ver en funciones
-
-    pen.setBrush(Qt::blue);
-    painter.setPen(pen);
 
     double xdist = (double) this->width() / (double) imagen.M(); //incremento de x //cuidado con conversiones
     double ydist = (double) this->height() / (double) imagen.maxh(); //incremento de y

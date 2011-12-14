@@ -95,6 +95,39 @@ void Imagen::transformar(int * vout) {
     update();
 }
 
+
+
+void Imagen::setQImage(QImage image) {
+    qimage = image;
+    update();
+    //cuidado no se ha puesto el nombre de la imagen
+}
+
+
+void Imagen::pegarImagen(Imagen image, QPoint p1) {
+    if (image.size() == this->size()) {
+        *this = image;
+        return;
+    }
+
+    //if (p2 == QPoint(-1, -1)) //si es valor por defecto
+    //    p2 = QPoint(p1.x() + image.width(), p1.y() + image.height()); //se pone hasta el final de image
+
+    int vin;
+    int x, y; //posicion en this.qimage
+    for (int i = 0; i < image.width(); i++) //recorre la imagen
+        for (int j = 0; j < image.height(); j++) {
+            vin = qGray(image.qimage.pixel(i, j));
+            x = p1.x() + i;
+            y = p1.y() + j;
+            if ((x < this->qimage.width()) && (y < this->qimage.height())) //si no se sale de la imagen original
+                this->qimage.setPixel(x, y, vin);
+        }
+
+    update();
+}
+
+
 int Imagen::M() { //numero total de niveles
     return Mniveles;
 }

@@ -28,7 +28,8 @@ public:
     void abrir();
     void updateImageLabel();
 
-    Imagen imagen;
+    Imagen imagen; //imagen entera que se usa
+    Imagen imagenRect; //imagen de region seleccionada (si no hay region es igual a imagen), esta es realmente con la que se trabaja
 
 private:
     Ui::aShot *ui;
@@ -44,6 +45,8 @@ private:
     double scaleFactor;
     bool hasImage;
 
+    QPoint p1, p2; //puntos para region de seleccion (QRect rect)
+
 
 #ifndef QT_NO_PRINTER
     QPrinter printer;
@@ -54,7 +57,16 @@ private:
     void updateZoomActions();
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
+    void pegarImagenRect(); //pega la imagenRect en imagen
 
+
+protected:
+    void paintEvent(QPaintEvent *);
+    void mousePressEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent *); //CUIDADO: si la imagen no cabe aun no lo hace bien
+    void mouseReleaseEvent(QMouseEvent *);
+    void mouseDoubleClickEvent(QMouseEvent *);
+    //void mouseGrabber();
 
 private slots:
     void abrirNew();
@@ -68,7 +80,7 @@ private slots:
     void acercade();
     void guardar();
     void guardarComo();
-    void toGray(); //convierte imagen a escala de grises
+    void toGray(); //convierte imagen a escala de grises. DOS COSAS: una para convertir formato de imagen, y otra blanco/negro de imagenRect
     void negativo(); //convierte imagen a negativo
 
     //para sacar widgets

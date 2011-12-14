@@ -48,6 +48,8 @@ public:
 
     void update(); //actualiza info asociada a imagen: vector hist
     void transformar(int * vout); //trasnforma una imagen con una tabla LUT dada, es decir, vector vout
+    void setQImage(QImage image);
+    void pegarImagen(Imagen image, QPoint p1); //pega image desde punto p1. donde se salga, por supuesto no hace nada. // QPoint p2 = QPoint(-1, -1));
 
     int perfil(int x, int y);
     int perfil(int i);
