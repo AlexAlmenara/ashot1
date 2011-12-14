@@ -34,7 +34,7 @@ aShot::aShot(QWidget *parent) :
 
     ui->imageLabel->setBackgroundRole(QPalette::Base);
     ui->imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    ui->imageLabel->setScaledContents(true);
+    ui->imageLabel->setScaledContents(true); //se escala para rellenar todo el espacio
 
     ui->scrollArea = new QScrollArea;
     ui->scrollArea->setBackgroundRole(QPalette::Dark);
@@ -46,13 +46,13 @@ aShot::aShot(QWidget *parent) :
 
     hasImage = false;
 
+    //setAttribute(Qt::WA_OpaquePaintEvent);
     connectActions();
     abrir(); //para acelerar la depuracion
 
 }
 
-aShot::~aShot()
-{
+aShot::~aShot() {
     delete ui;
 }
 
@@ -63,7 +63,79 @@ void aShot::updateImageLabel() {
 
     if (!ui->actionAjustar_a_ventana->isChecked())
         ui->imageLabel->adjustSize();
+
+    //ui->statusBar->showMessage((const QString) "(x, y)");
 }
+
+
+void aShot::pegarImagenRect() {
+    imagen.pegarImagen(imagenRect, p1);
+}
+
+
+
+//protected: events
+void aShot::mousePressEvent(QMouseEvent* event) {
+    if (hasImage) {
+        //printf("(%d, %d)", ui->scrollArea->pos().x(), ui->scrollArea->pos().y());
+        int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
+        int y = event->y() - ui->scrollArea->pos().y();
+        if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
+            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ")"); //tambien: event->x()
+            p1 = QPoint(x, y);
+        }
+    }
+}
+
+void aShot::mouseMoveEvent(QMouseEvent *event) {
+    if (hasImage) {
+        //printf("(%d, %d)", ui->scrollArea->pos().x(), ui->scrollArea->pos().y());
+        int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
+        int y = event->y() - ui->scrollArea->pos().y();
+        if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
+            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ")"); //tambien: event->x()
+            p2 = QPoint(x, y);
+            update(); //update widget. tambien: repaint()
+        }
+    }
+}
+
+
+void aShot::mouseReleaseEvent(QMouseEvent *) {
+    if (hasImage) {
+        //printf("se ha soltado raton");
+        imagenRect.setQImage(imagen.qimage.copy(QRect(p1, p2))); //copia imagen a partir de region de seleccion
+    }
+}
+
+
+void aShot::mouseDoubleClickEvent(QMouseEvent *) {
+    if (hasImage) {
+        updateImageLabel(); //quita el rectangulo
+        p1 = QPoint(0, 0); //la region de seleccion es toda la imagen
+        p2 = QPoint(imagen.width() - 1, imagen.height() - 1);
+        imagenRect = imagen;
+    }
+}
+
+
+void aShot::paintEvent(QPaintEvent *) {
+    if ((hasImage) && (p1 != QPoint(0, 0)) && (p2 != QPoint(imagen.width(), imagen.height()))) { //para no dibujar rect de toda la imagen
+        updateImageLabel();
+        QPixmap pic = (QPixmap) *ui->imageLabel->pixmap();
+        QPainter painter(&pic);
+        QPen pen = QPen(Qt::blue, 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin); //tambien: pen.setBrush(Qt::blue);
+        painter.setPen(pen);
+
+        painter.drawRect(QRect(p1, p2));
+
+        painter.end();
+        ui->imageLabel->setPixmap(pic);
+    }
+
+}
+
+
 
 
 //slots:
@@ -100,6 +172,9 @@ void aShot::abrir() {
         updateZoomActions();
         updateImageLabel();
         hasImage = true;
+        p1 = QPoint(0, 0); //la region de seleccion es toda la imagen
+        p2 = QPoint(imagen.width() - 1, imagen.height() - 1);
+        imagenRect = imagen; //por ahora la imagen de la seleccion es toda la imagen
     }
 }
 
@@ -242,8 +317,10 @@ void aShot::toGray() {
 
 
 void aShot::negativo() {
-    imagen.qimage.invertPixels(); //el negativo de la imagen. tambien se podria con un bucle con imagen.negativo(vin)
-    imagen.update();
+    imagenRect.qimage.invertPixels(); //el negativo de la imagen. tambien se podria con un bucle con imagen.negativo(vin)
+
+    imagenRect.update();
+    pegarImagenRect();
     updateImageLabel();
 }
 
@@ -282,13 +359,14 @@ void aShot::applyDestroyLogexp() {
 
 
 void aShot::showNewTramos() {
-    tramos = new Tramos(0, imagen);
+    tramos = new Tramos(0, imagenRect);
     connect(tramos, SIGNAL(closed()), this, SLOT(applyDestroyTramos()));
     tramos->show();
 }
 
 void aShot::applyDestroyTramos() {
-    imagen = tramos->imagenAux;
+    imagenRect = tramos->imagenAux;
+    pegarImagenRect();
     updateImageLabel(); //ya lo hace logexp
     //delete tramos;
 }
@@ -296,13 +374,13 @@ void aShot::applyDestroyTramos() {
 
 
 void aShot::showNewHistograma() {
-    histograma = new Histograma(0, imagen);
+    histograma = new Histograma(0, imagenRect);
     histograma->show();
 }
 
 
 void aShot::showNewPerfil() {
-    perfil = new Perfil(0, imagen);
+    perfil = new Perfil(0, imagenRect);
     perfil->show();
 }
 
@@ -499,4 +577,6 @@ void aShot::adjustScrollBar(QScrollBar *scrollBar, double factor) {
     scrollBar->setValue(int(factor * scrollBar->value()
                             + ((factor - 1) * scrollBar->pageStep()/2)));
 }
+
+
 
