@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "imagen.h"
+#include "function.h"
 
 namespace Ui {
     class Tramos;
@@ -29,7 +30,7 @@ signals:
     void closed();
 
 public slots:
-    void aplicarCambios();
+    void aceptar();
     void cancelar();
 
     void introNtramos();

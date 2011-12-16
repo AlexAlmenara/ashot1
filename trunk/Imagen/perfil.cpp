@@ -7,12 +7,17 @@ Perfil::Perfil(QWidget *parent, Imagen imagen) :
 {
     ui->setupUi(this);
 
-    setMinimumSize(256, 256);
-    //resize(256, 256);
-    setBackgroundRole(QPalette::Base);
-    setAutoFillBackground(true);
 
     this->imagen = imagen;
+    setWindowTitle("Perfil de " + imagen.fileName());
+
+    connect(ui->radioButtonPerfil, SIGNAL(clicked()), this, SLOT(perfil()));
+    connect(ui->radioButtondPerfil, SIGNAL(clicked()), this, SLOT(dperfil()));
+    connect(ui->radioButtonPerfilSuave, SIGNAL(clicked()), this, SLOT(perfilSuave()));
+    connect(ui->radioButtondPerfilSuave, SIGNAL(clicked()), this, SLOT(dperfilSuave()));
+    ui->radioButtonPerfil->setChecked(true); //empieza por defecto perfil normal
+    perfil();
+
 }
 
 Perfil::~Perfil()
@@ -21,32 +26,51 @@ Perfil::~Perfil()
 }
 
 
-void Perfil::paintEvent(QPaintEvent * /* event */) {
-
-    QPainter painter(this);
-    pen = QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); //    pen.setBrush(Qt::blue);
-
-    painter.setPen(pen);
-    painter.scale(1.0, -1.0); //invierte y
-    painter.translate(0.0, (double) -height()); //el (0, 0) esta abajo como solemos ver en funciones
-
-
-    //esto ya no hace falta, porque las coordenadas se eligen desde aShot
-    /*int x1 = 5, y1 = 10; //coordenadas que introduce el usuario
-    int x2 = 100, y2 = 200;
-
-    int i1 = imagen.width() * (y1 - 1) + x1;
-    int i2 = imagen.width() * (y2 - 1) + x2;*/
-
-    double xdist = (double) this->width() / (double) (imagen.size()); //(i2 - i1); //incremento de x //cuidado con conversiones
-    double ydist = (double) this->height() / (double) imagen.M(); //incremento de y
-    double x; //para paint
-    double y;
-    for (int i = 0; i < imagen.size(); i++) { //desde i1 hasta i2
-        x = i * xdist;
-        //printf("i antes");
-        y = imagen.dperfil(i) * ydist;
-        //printf("i despues");
-        painter.drawLine(x, 0.0, x, y);
-    }
+void Perfil::updatePunto() {
+    ui->labelPunto->setText("Pixel: " + QString::number((int) function->getX()) + ", Valor: " + QString::number(function->getY()));
 }
+
+
+void Perfil::newFunction(double ymax) {
+    function = new Function(this, hist, 0, imagen.size() - 1, 0, ymax); //por defecto histograma absoluto
+    function->resize(400, 200);
+    function->show();
+    function->move(40, 20);
+    connect(function, SIGNAL(moused()), this, SLOT(updatePunto()));
+}
+
+
+void Perfil::perfil() {
+    hist = QVector<double>(imagen.size());
+    for (int vin = 0; vin < imagen.size(); vin++)
+        hist.insert(vin, imagen.perfil(vin));
+
+    newFunction((double) imagen.M());
+}
+
+void Perfil::dperfil() {
+    hist = QVector<double>(imagen.size());
+    for (int vin = 0; vin < imagen.size(); vin++)
+        hist.insert(vin, imagen.dperfil(vin));
+
+    newFunction((double) imagen.M());
+}
+
+
+void Perfil::perfilSuave() {
+    hist = QVector<double>(imagen.size());
+    for (int vin = 0; vin < imagen.size(); vin++)
+        hist.insert(vin, imagen.perfilSuave(vin));
+
+    newFunction((double) imagen.M());
+}
+
+
+void Perfil::dperfilSuave() {
+    hist = QVector<double>(imagen.size());
+    for (int vin = 0; vin < imagen.size(); vin++)
+        hist.insert(vin, imagen.dperfilSuave(vin));
+
+    newFunction((double) imagen.M());
+}
+

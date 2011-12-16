@@ -112,6 +112,8 @@
      <addaction name="actionNegativo"/>
      <addaction name="actionEcualizar"/>
      <addaction name="actionLog_Exp"/>
+     <addaction name="actionHespecif"/>
+     <addaction name="actionDigitalizar"/>
     </widget>
     <addaction name="menuAjustes"/>
     <addaction name="separator"/>
@@ -299,6 +301,16 @@
   <action name="actionTramos">
    <property name="text">
     <string>Tramos</string>
+   </property>
+  </action>
+  <action name="actionHespecif">
+   <property name="text">
+    <string>Especificacion hist</string>
+   </property>
+  </action>
+  <action name="actionDigitalizar">
+   <property name="text">
+    <string>Digitalizar</string>
    </property>
   </action>
  </widget>

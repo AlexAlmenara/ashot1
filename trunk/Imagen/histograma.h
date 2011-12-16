@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "imagen.h"
+#include "function.h"
 
 namespace Ui {
     class Histograma;
@@ -19,14 +20,23 @@ public:
 private:
     Ui::Histograma *ui;
 
-    QPen pen;
-    QBrush brush;
-
+    QVector<double> hist;
+    Function * function;
     Imagen imagen;
 
+    void newFunction(double ymax);
 
-protected:
-    void paintEvent(QPaintEvent *event);
+
+public slots:
+    void updatePunto();
+    void histAbs();
+    void histRel();
+    void histAcum();
+    void histAcumNorm();
+
+//protected:
+  //  void mouseMoveEvent(QMouseEvent *);
+    //void paintEvent(QPaintEvent *event);
 };
 
 #endif // HISTOGRAMA_H

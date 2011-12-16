@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "imagen.h"
+#include "function.h"
 
 namespace Ui {
     class Perfil;
@@ -19,14 +20,19 @@ public:
 private:
     Ui::Perfil *ui;
 
-    QPen pen;
-    QBrush brush;
-
+    QVector<double> hist;
+    Function * function;
     Imagen imagen;
 
+    void newFunction(double ymax);
 
-protected:
-    void paintEvent(QPaintEvent *event);
+
+public slots:
+    void updatePunto();
+    void perfil();
+    void dperfil();
+    void perfilSuave();
+    void dperfilSuave();
 };
 
 #endif // PERFIL_H

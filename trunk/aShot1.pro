@@ -18,7 +18,10 @@ SOURCES += main.cpp\
     Imagen/logexp.cpp \
     Imagen/histograma.cpp \
     Imagen/perfil.cpp \
-    Imagen/tramos.cpp
+    Imagen/tramos.cpp \
+    function.cpp \
+    Imagen/hespecif.cpp \
+    Imagen/digitalizar.cpp
 
 HEADERS  += ashot.h \
     Ayuda/ayuda.h \
@@ -27,7 +30,10 @@ HEADERS  += ashot.h \
     Imagen/logexp.h \
     Imagen/histograma.h \
     Imagen/perfil.h \
-    Imagen/tramos.h
+    Imagen/tramos.h \
+    function.h \
+    Imagen/hespecif.h \
+    Imagen/digitalizar.h
 
 FORMS    += ashot.ui \
     Ayuda/ayuda.ui \
@@ -35,10 +41,22 @@ FORMS    += ashot.ui \
     Imagen/logexp.ui \
     Imagen/histograma.ui \
     Imagen/perfil.ui \
-    Imagen/tramos.ui
+    Imagen/tramos.ui \
+    function.ui \
+    Imagen/hespecif.ui \
+    Imagen/digitalizar.ui
 
 RESOURCES += \
     resources/aShotResources.qrc
+
+
+
+
+
+
+
+
+
 
 
 

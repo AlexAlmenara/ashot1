@@ -42,14 +42,15 @@ aShot::aShot(QWidget *parent) :
     setCentralWidget(ui->scrollArea);
 
     //setWindowTitle(tr("aShot 1.0")); //se hace tambien con Qt Designer
-    resize(500, 400);
+    resize(600, 500);
 
     hasImage = false;
 
     //setAttribute(Qt::WA_OpaquePaintEvent);
     connectActions();
-    abrir(); //para acelerar la depuracion
+    //abrir(); //para acelerar la depuracion
 
+    //setMouseTracking(false);
 }
 
 aShot::~aShot() {
@@ -59,12 +60,15 @@ aShot::~aShot() {
 
 void aShot::updateImageLabel() {
     ui->imageLabel->setPixmap(QPixmap::fromImage(imagen.qimage));
+    //ui->imageLabel->hide();
+    //ui->imageLabel->resize(QSize(imagen.width(), imagen.height()));
+    //ui->imageLabel->show();
+    //adjustScrollBar(ui->scrollArea->horizontalScrollBar(), 1.0);
+    //adjustScrollBar(ui->scrollArea->verticalScrollBar(), 1.0);
     scaleFactor = 1.0;
 
     if (!ui->actionAjustar_a_ventana->isChecked())
         ui->imageLabel->adjustSize();
-
-    //ui->statusBar->showMessage((const QString) "(x, y)");
 }
 
 
@@ -81,7 +85,7 @@ void aShot::mousePressEvent(QMouseEvent* event) {
         int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
         int y = event->y() - ui->scrollArea->pos().y();
         if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
-            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ")"); //tambien: event->x()
+            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ") = " + QString::number(imagen.perfil(x, y)));
             p1 = QPoint(x, y);
         }
     }
@@ -93,7 +97,7 @@ void aShot::mouseMoveEvent(QMouseEvent *event) {
         int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
         int y = event->y() - ui->scrollArea->pos().y();
         if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
-            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ")"); //tambien: event->x()
+            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ") = " + QString::number(imagen.perfil(x, y))); //tambien: event->x()
             p2 = QPoint(x, y);
             update(); //update widget. tambien: repaint()
         }
@@ -140,6 +144,11 @@ void aShot::paintEvent(QPaintEvent *) {
 
 //slots:
 
+void aShot::updateAll() { //actualiza imagen y imageLabel
+    pegarImagenRect();
+    updateImageLabel();
+}
+
 void aShot::abrirNew() {
     if (!this->hasImage)
         abrir();
@@ -159,7 +168,7 @@ void aShot::cerrarTodo() {
 }
 
 void aShot::abrir() {
-    QString fileName = "/home/alex/Escritorio/huevoo.tif"; //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //"/home/alex/Escritorio/patricia-conde6.jpg";
 
     if (!fileName.isEmpty()) {
         imagen = Imagen(fileName);
@@ -168,6 +177,7 @@ void aShot::abrir() {
             return;
         }
 
+        resize(imagen.width(), imagen.height() + 200); //+ las barras etc
         enableActions();
         updateZoomActions();
         updateImageLabel();
@@ -253,14 +263,19 @@ void aShot::info_imagen() {
         string cadena = s.str();*/
 
         QMessageBox::information(this, tr("Informacion de la imagen"),
-                                 "Nombre del fichero: " + imagen.fileName()
-                                 + "\nExtension: " + imagen.extension()
-                                 + "\nError: " + QString::number(imagen.error())
-                                 + "\nDimension en pixeles: " + QString::number(imagen.width()) + " x " + QString::number(imagen.height()) + " pixeles \nSize: " + QString::number(imagen.size())
-                                 + "pixeles \nFormato: " + imagen.formato()
-                                 + "\nBrillo: " + QString::number(imagen.brillo())  + "\nContraste: " + QString::number(imagen.contraste())
-                                 +"\nEntropia: " + QString::number(imagen.entropia())
-                                 + "\nRango Dinamico: [" + QString::number(imagen.minRango()) + ".." + QString::number(imagen.maxRango()) + "]\n");
+                                 "<p><b>Nombre del fichero: </b>" + imagenRect.fileName() + "</p>"
+                                 + "<p><b>Ruta:</b> " + imagenRect.path() + "</p>"
+                                 + "<p><b>Extension:</b> " + imagenRect.extension() + "</p>"
+                                 + "<p><b>Tamano:</b> " + QString::number((double) imagenRect.qimage.byteCount() / 1024.0) + " KB</p>"
+                                 + "<p><b>Error:</b> " + QString::number(imagenRect.error()) + "</p>"
+                                 + "<p><b>Dimension en pixeles:</b> " + QString::number(imagenRect.width()) + " x " + QString::number(imagenRect.height()) + " pixeles</p>"
+                                 + "<p><b>Numero de pixeles:</b> " + QString::number(imagenRect.size()) + " pixeles</p>"
+                                 + "<p><b>Formato:</b> " + imagenRect.formato() + "</p>"
+                                 + "<p><b>Brillo:</b> " + QString::number(imagenRect.brillo()) + "</p>"
+                                 + "<p><b>Contraste:</b> " + QString::number(imagenRect.contraste()) + "</p>"
+                                 +"<p><b>Entropia:</b> " + QString::number(imagenRect.entropia()) + "</p>"
+                                 + "<p><b>Rango Dinamico:</b> [" + QString::number(imagenRect.minRango()) + ".." + QString::number(imagenRect.maxRango()) + "]</p>"
+                                 + "<p><b>Frecuencia maxima:</b> " + QString::number(imagenRect.maxh()) + " (nivel: " + QString::number(imagenRect.max_vin()) + ")</p>" );
 
     }
 
@@ -320,41 +335,54 @@ void aShot::negativo() {
     imagenRect.qimage.invertPixels(); //el negativo de la imagen. tambien se podria con un bucle con imagen.negativo(vin)
 
     imagenRect.update();
-    pegarImagenRect();
-    updateImageLabel();
+    updateAll();
 }
 
 
 //slots de tratamiento para ventanitas de edicion de imagen
+void aShot::showNewHistograma() {
+    histograma = new Histograma(0, imagenRect);
+    histograma->show();
+}
+
+
+void aShot::showNewPerfil() {
+    perfil = new Perfil(0, imagenRect);
+    perfil->show();
+}
+
 
 void aShot::showNewBC() { //crea bc y lo muestra
-    bc = new BrilloContraste(0, imagen, ui->imageLabel);
+    bc = new BrilloContraste(0, imagenRect);
     //this->bc = new BrilloContraste(this); //esto se hara una vez abierta la imagen
     //connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this->bc, SLOT(show()));
-    connect(bc, SIGNAL(closed()), this, SLOT(applyDestroyBC()));
+    connect(bc, SIGNAL(changed()), this, SLOT(applyBC()));
     bc->show();
 }
 
 
-void aShot::applyDestroyBC() {
-    //printf("aplicarrr");
+/*void aShot::applyDestroyBC() {
     //delete imagen;
-    imagen = bc->imagenAux; //tambien pasa si se cancela, pero no importa, en ese caso imageAux seria la imagen original
+    imagenRect = bc->imagenAux; //tambien pasa si se cancela, pero no importa, en ese caso imageAux seria la imagen original
     //imagen = new Imagen(bc->imagenAux->fileName());
     delete bc;
+}*/
+
+void aShot::applyBC() {
+    imagenRect = bc->imagenAux;
+    updateAll();
 }
 
 
 void aShot::showNewLogexp() {
-    logexp = new Logexp(0, imagen, ui->imageLabel);
-    connect(logexp, SIGNAL(closed()), this, SLOT(applyDestroyLogexp()));
+    logexp = new Logexp(0, imagenRect);
+    connect(logexp, SIGNAL(changed()), this, SLOT(applyLogexp()));
     logexp->show();
 }
 
-void aShot::applyDestroyLogexp() {
-    imagen = logexp->imagenAux;
-    //updateImageLabel(); //ya lo hace logexp
-    delete logexp;
+void aShot::applyLogexp() {
+    imagenRect = logexp->imagenAux;
+    updateAll();
 }
 
 
@@ -366,23 +394,36 @@ void aShot::showNewTramos() {
 
 void aShot::applyDestroyTramos() {
     imagenRect = tramos->imagenAux;
-    pegarImagenRect();
-    updateImageLabel(); //ya lo hace logexp
+    updateAll();
     //delete tramos;
 }
 
 
+void aShot::showNewHespecif() {
+    hespecif = new Hespecif(0, imagenRect);
+    connect(hespecif, SIGNAL(changed()), this, SLOT(applyHespecif()));
+    hespecif->show();
+}
 
-void aShot::showNewHistograma() {
-    histograma = new Histograma(0, imagenRect);
-    histograma->show();
+void aShot::applyHespecif() {
+    //printf("eyy cambio hespecif");
+    imagenRect = hespecif->imagenAux;
+    updateAll();
 }
 
 
-void aShot::showNewPerfil() {
-    perfil = new Perfil(0, imagenRect);
-    perfil->show();
+void aShot::showNewDigit() {
+    digit = new Digitalizar(0, imagen);
+    connect(digit, SIGNAL(changed()), this, SLOT(applyDigit()));
+    digit->show();
 }
+
+void aShot::applyDigit() {
+    imagen = digit->imagenAux;
+    imagenRect = imagen;
+    updateAll();
+}
+
 
 
 void aShot::prueba() {
@@ -448,21 +489,22 @@ void aShot::prueba() {
 
 void aShot::ecualizar() { //ecualizacion del histograma: aproximacion de distribucion uniforme, mantiene entropia
 
-    int * vout = new int [imagen.M()]; //tabla LUT
-    for (int vin = 0; vin < imagen.M(); vin++) {
-        vout[vin] = (int) (imagen.hAcum(vin) * ((double) imagen.M() / (double) imagen.size()));
+    int * vout = new int [imagenRect.M()]; //tabla LUT
+    for (int vin = 0; vin < imagenRect.M(); vin++) {
+        vout[vin] = (int) (imagenRect.hAcum(vin) * ((double) imagenRect.M() / (double) imagenRect.size()));
         vout[vin] = (int) (floor((double) vout[vin]) - 1.0);
         if (vout[vin] < 0)
             vout[vin] = 0; //vout = max(0, expresion anterior);
 
-        if (vout[vin] > imagen.M() - 1)
-            vout[vin] = imagen.M() - 1;
+        if (vout[vin] > imagenRect.M() - 1)
+            vout[vin] = imagenRect.M() - 1;
         else
             if (vout[vin] < 0)
                 vout[vin] = 0;
     }
 
-    imagen.transformar(vout);
+    imagenRect.transformar(vout);
+    pegarImagenRect();
     updateImageLabel();//actualiza label
 }
 
@@ -482,13 +524,18 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     this->ayuda = new Ayuda();
     connect(ui->actionAyuda_de_aShot, SIGNAL(triggered()), this->ayuda, SLOT(show()));
     ui->menuAjustes->setEnabled(false);
-   //bc
+
+    //transformaciones
     connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this, SLOT(showNewBC()));
     ui->actionBrillo_Contraste->setEnabled(false);
     connect(ui->actionLog_Exp, SIGNAL(triggered()), this, SLOT(showNewLogexp()));
     ui->actionLog_Exp->setEnabled(false);
     connect(ui->actionTramos, SIGNAL(triggered()), this, SLOT(showNewTramos()));
     ui->actionTramos->setEnabled(false);
+    connect(ui->actionHespecif, SIGNAL(triggered()), this, SLOT(showNewHespecif()));
+    ui->actionHespecif->setEnabled(false);
+    connect(ui->actionDigitalizar, SIGNAL(triggered()), this, SLOT(showNewDigit()));
+    ui->actionDigitalizar->setEnabled(false);
 
     connect(ui->actionAjustar_a_ventana, SIGNAL(triggered()), this, SLOT(fitToWindow()));
     ui->actionAjustar_a_ventana->setEnabled(false);
@@ -537,6 +584,8 @@ void aShot::enableActions() {
     ui->actionBrillo_Contraste->setEnabled(true);
     ui->actionLog_Exp->setEnabled(true);
     ui->actionTramos->setEnabled(true);
+    ui->actionHespecif->setEnabled(true);
+    ui->actionDigitalizar->setEnabled(true);
 
     ui->actionAjustar_a_ventana->setEnabled(true);
     ui->action_Cerrar->setEnabled(true);

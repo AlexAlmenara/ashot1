@@ -8,7 +8,7 @@ Tramos::Tramos(QWidget *parent, Imagen imagen) :
     ui->setupUi(this);
 
     connect(ui->ButtonCancelar, SIGNAL(clicked()), this, SLOT(cancelar()));
-    connect(ui->ButtonAceptar, SIGNAL(clicked()), this, SLOT(aplicarCambios()));
+    connect(ui->ButtonAceptar, SIGNAL(clicked()), this, SLOT(aceptar()));
 
     connect(ui->ButtonNtramos, SIGNAL(clicked()), this, SLOT(introNtramos()));
     connect(ui->ButtonPunto, SIGNAL(clicked()), this, SLOT(introPuntoi()));
@@ -56,6 +56,8 @@ void Tramos::introPuntoi() { //al menos se introduciran dos puntos.
     if (puntoi == nTramos) { //0..nTramos, son (nTramos+1)
         ui->ButtonPunto->setEnabled(false); //ya no se introducen mas puntos
         ui->ButtonAceptar->setEnabled(true); //para terminar
+        //Function * func = new Function(0, vector, 0.0, (double) imagenAux.M(), 0.0, (double) imagenAux.size() / (double) imagenAux.M());
+        //func->show();
         return;
     }
 
@@ -70,7 +72,7 @@ void Tramos::introPuntoi() { //al menos se introduciran dos puntos.
 
 
 //slots:
-void Tramos::aplicarCambios() {
+void Tramos::aceptar() {
     int * vout = new int [imagenAux.M()]; //tabla LUT
 
     int tramo_i = 0; //tramo actual
