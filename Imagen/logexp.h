@@ -13,14 +13,16 @@ class Logexp : public QWidget
     Q_OBJECT
 
 public:
-    explicit Logexp(QWidget *parent = 0, Imagen imagen = Imagen(), QLabel * label = NULL);
+    explicit Logexp(QWidget *parent = 0, Imagen imagen = Imagen());
     ~Logexp();
 
+    Imagen imagenOriginal;
     Imagen imagenAux; //imagen auxiliar para volcar en imagelabel de aShot los cambios
-    QLabel * imageLabel;
 
 private:
     Ui::Logexp *ui;
+
+    void setValues(Imagen imagen);
 
     //funciones de transformacion: vout[vin] = f(vin, k)
     int log1(int vin);
@@ -33,10 +35,11 @@ private:
 
 
 signals:
-    void closed();
+    void changed();
 
 public slots:
-    void aplicarCambios();
+    void cambiarImagen();
+    void aceptar();
     void cancelar();
 
 

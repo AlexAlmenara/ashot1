@@ -19,12 +19,20 @@ Imagen::Imagen() {
 
 Imagen::Imagen(QString fileName) {
     qimage = QImage(fileName);
-    this->file = fileName;
+    this->name = fileName;
     if (this->isNull())
         err = 1;
     else
         err = 0;
     update();
+}
+
+
+Imagen::Imagen(QImage image, QString fileName) {
+    setQImage(image);
+    if (fileName != "")
+        name = fileName;
+    //update(); //ya lo hace setQImage
 }
 
 
@@ -103,6 +111,10 @@ void Imagen::setQImage(QImage image) {
     //cuidado no se ha puesto el nombre de la imagen
 }
 
+void Imagen::setFileName(QString fileName) {
+    name = fileName;
+}
+
 
 void Imagen::pegarImagen(Imagen image, QPoint p1) {
     if (image.size() == this->size()) {
@@ -139,6 +151,20 @@ int Imagen::maxh() {
             maximo = hist[i];
     return maximo;
 }
+
+
+int Imagen::max_vin() {
+    int maximo = hist[0];
+    int vin = 0;
+    for (int i = 0; i < M(); i++)
+        if (maximo < hist[i]) {
+            maximo = hist[i];
+            vin = i;
+        }
+
+    return vin;
+}
+
 
 int Imagen::maxRango() {
     for (int i = M() - 1; i >= 0; i--)
@@ -260,12 +286,38 @@ int Imagen::dperfil(int i) {
     return perfil(i + 1) - perfil(i);
 }
 
+
+
+int Imagen::perfilSuave(int i) {
+    if (i == 0)
+        return (int) ((double) (perfil(0) + perfil(1)) / 2.0);
+    else
+        if (i == size())
+           return (int) ((double) (perfil(i - 1) + perfil(i)) / 2.0);
+        else
+            return (int) ((double) (perfil(i - 1) + perfil(i) + perfil(i + 1)) / 3.0);
+}
+
+
+int Imagen::dperfilSuave(int i) {
+    if ((i == 0) || (i == size()))
+        return perfilSuave(i);
+
+    return perfilSuave(i + 1) - perfilSuave(i);
+}
+
+
+QString Imagen::path() {
+    return name; //ruta absoluta
+}
+
+
 QString Imagen::fileName() {
-    return file;
+    return name.section('/', -1);
 }
 
 QString Imagen::extension() {
-    return file;
+    return name.section('.', -1);
 }
 
 QString Imagen::formato() {

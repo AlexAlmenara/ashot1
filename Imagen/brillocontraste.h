@@ -16,24 +16,25 @@ class BrilloContraste : public QWidget
     Q_OBJECT
 
 public:
-    explicit BrilloContraste(QWidget *parent = 0, Imagen imagen = Imagen(), QLabel * label = NULL);
+    explicit BrilloContraste(QWidget *parent = 0, Imagen imagen = Imagen());
     ~BrilloContraste();
 
     Imagen imagenOriginal;
     Imagen imagenAux; //imagen auxiliar para volcar en imagelabel de aShot los cambios que se hagan al cambiar valores de brillo y contraste
-    QLabel * imageLabel;
+    //QLabel * imageLabel;
     //aShot * shot; //solo coge el puntero de la apliacion principal para poder modificar la imagelabel y su imagen
 
 
 public slots:
-    void setValues(Imagen imagen, QLabel * label);
-    void changeImageLabel();
-    void aplicarCambios();
+    void cambiarImagen();
+    void aceptar();
     void cancelar();
     void reiniciar();
 
 private:
     Ui::BrilloContraste *ui;
+
+    void setValues(Imagen imagen);
 
 
 signals:
@@ -42,7 +43,8 @@ signals:
 
     void updateSliderC(int);
     void updateSpinBoxC(double);
-    void closed();
+    //void closed();
+    void changed();
 
 private slots:
     void intToDoubleB(int value);

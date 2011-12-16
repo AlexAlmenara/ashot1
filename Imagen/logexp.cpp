@@ -2,14 +2,14 @@
 #include "ui_logexp.h"
 #include "math.h"
 
-Logexp::Logexp(QWidget *parent, Imagen imagen, QLabel * label) :
+Logexp::Logexp(QWidget *parent, Imagen imagen) :
     QWidget(parent),
     ui(new Ui::Logexp)
 {
     ui->setupUi(this);
 
     connect(ui->ButtonCancelar, SIGNAL(clicked()), this, SLOT(cancelar()));
-    connect(ui->ButtonAceptar, SIGNAL(clicked()), this, SLOT(aplicarCambios()));
+    connect(ui->ButtonAceptar, SIGNAL(clicked()), this, SLOT(aceptar()));
 
 
     //spinbox
@@ -30,11 +30,18 @@ Logexp::Logexp(QWidget *parent, Imagen imagen, QLabel * label) :
     connect(ui->exp2radioButton, SIGNAL(clicked()), ui->klabel, SLOT(show()));
     connect(ui->exp3radioButton, SIGNAL(clicked()), ui->klabel, SLOT(show()));
 
-    ui->kdoubleSpinBox->setRange(1.0, 10.0);
-    ui->kdoubleSpinBox->setValue(1); //valor por defecto de k
-    ui->log3radioButton->setChecked(true); //log3 sera la funcion por defecto
-    imagenAux =  imagen;
-    imageLabel = label; //se igualan los punteros: ambos apuntan a la misma label donde se pinta la imagen
+    //conectar para change
+    connect(ui->log1radioButton, SIGNAL(clicked()), this, SLOT(cambiarImagen()));
+    connect(ui->log2radioButton, SIGNAL(clicked()), this, SLOT(cambiarImagen()));
+    connect(ui->log3radioButton, SIGNAL(clicked()), this, SLOT(cambiarImagen()));
+
+    connect(ui->exp1radioButton, SIGNAL(clicked()), this, SLOT(cambiarImagen()));
+    connect(ui->exp2radioButton, SIGNAL(clicked()), this, SLOT(cambiarImagen()));
+    connect(ui->exp3radioButton, SIGNAL(clicked()), this, SLOT(cambiarImagen()));
+
+    connect(ui->kdoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(cambiarImagen()));
+
+    setValues(imagen);
 }
 
 
@@ -42,6 +49,17 @@ Logexp::~Logexp() {
     delete ui;
 }
 
+
+
+void Logexp::setValues(Imagen imagen) {
+    ui->kdoubleSpinBox->setRange(1.0, 10.0);
+    ui->kdoubleSpinBox->setValue(1); //valor por defecto de k
+    ui->log3radioButton->setChecked(true); //log3 sera la funcion por defecto
+
+    imagenOriginal = imagen;
+    imagenAux =  imagen;
+
+}
 
 //funciones de transformacion: vout[vin] = f(vin, k)
 //aun no mira si se pasa del rango [0, M -1], se hace despues
@@ -89,7 +107,9 @@ int Logexp::exp3(int vin, int k) {
 
 //slots:
 
-void Logexp::aplicarCambios() {
+void Logexp::cambiarImagen() {
+    imagenAux = imagenOriginal;
+
     int * vout = new int [imagenAux.M()]; //tabla LUT
     int k = ui->kdoubleSpinBox->value();
 
@@ -121,16 +141,21 @@ void Logexp::aplicarCambios() {
 
 
     imagenAux.transformar(vout); //transformacion. tambien hace el update de histograma
-    imageLabel->setPixmap(QPixmap::fromImage(imagenAux.qimage)); //shot->updateImageLabel();//actualiza label
-
-    this->close();
-    emit(closed()); //se emite signal
+    emit(changed());
 }
 
 
+
+void Logexp::aceptar() {
+    this->close();
+    delete this;
+}
+
 void Logexp::cancelar() {
+    imagenAux = imagenOriginal;
     close();
-    emit(closed()); //se emite signal
+    emit(changed()); //se emite signal
+    delete this;
 }
 
 

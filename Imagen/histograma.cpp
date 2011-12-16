@@ -7,12 +7,17 @@ Histograma::Histograma(QWidget *parent, Imagen imagen) :
 {
     ui->setupUi(this);
 
-    setMinimumSize(256, 256);
-    //resize(256, 256);
-    setBackgroundRole(QPalette::Base);
-    setAutoFillBackground(true);
 
     this->imagen = imagen;
+    setWindowTitle("Histograma de " + imagen.fileName());
+
+    connect(ui->radioButtonAbs, SIGNAL(clicked()), this, SLOT(histAbs()));
+    connect(ui->radioButtonRel, SIGNAL(clicked()), this, SLOT(histRel()));
+    connect(ui->radioButtonAcum, SIGNAL(clicked()), this, SLOT(histAcum()));
+    connect(ui->radioButtonAcumNorm, SIGNAL(clicked()), this, SLOT(histAcumNorm()));
+    ui->radioButtonAbs->setChecked(true); //empieza por defecto histograma absoluto
+    histAbs();
+
 }
 
 Histograma::~Histograma()
@@ -21,22 +26,62 @@ Histograma::~Histograma()
 }
 
 
-void Histograma::paintEvent(QPaintEvent * /* event */) {
+/*void Histograma::paintEvent(QPaintEvent *) {
+    function->resize(width - 300, height - 300);
+    return;
+}*/
 
-    QPainter painter(this);
-    pen = QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-    painter.setPen(pen);
-    painter.scale(1.0, -1.0); //invierte y
-    painter.translate(0.0, (double) -height()); //el (0, 0) esta abajo como solemos ver en funciones
-
-    double xdist = (double) this->width() / (double) imagen.M(); //incremento de x //cuidado con conversiones
-    double ydist = (double) this->height() / (double) imagen.maxh(); //incremento de y
-    double x;
-    double y;
-    for (int vin = 0; vin < imagen.M(); vin++) {
-        x = vin * xdist;
-        y = imagen.hAbs(vin) * ydist;
-        painter.drawLine(x, 0.0, x, y);
-    }
+void Histograma::updatePunto() {
+    ui->labelPunto->setText("Nivel: " + QString::number((int) function->getX()) + ", Valor: " + QString::number(function->getY()));
 }
+
+
+void Histograma::newFunction(double ymax) {
+    //ui->verticalLayout->removeWidget(function);
+    function = new Function(this, hist, 0, imagen.M() - 1, 0, ymax); //por defecto histograma absoluto
+    function->resize(400, 200);
+    function->show();
+
+    //ui->verticalLayout->addWidget(function);
+    //ui->horizontalLayoutFunction->setGeometry((const QRect) QRect(function->size().width(), function->size().height()));
+    //ui->horizontalLayoutFunction->addWidget(function);
+    function->move(40, 20);
+    connect(function, SIGNAL(moused()), this, SLOT(updatePunto()));
+}
+
+
+void Histograma::histAbs() {
+    hist = QVector<double>(imagen.M());
+    for (int vin = 0; vin < imagen.M(); vin++)
+        hist.insert(vin, imagen.hAbs(vin));
+
+    newFunction(imagen.maxh());
+}
+
+void Histograma::histRel() {
+    hist = QVector<double>(imagen.M());
+    for (int vin = 0; vin < imagen.M(); vin++)
+        hist.insert(vin, imagen.hRel(vin));
+
+    newFunction((double)imagen.maxh() / (double) imagen.size());
+}
+
+
+void Histograma::histAcum() {
+    hist = QVector<double>(imagen.M());
+    for (int vin = 0; vin < imagen.M(); vin++)
+        hist.insert(vin, imagen.hAcum(vin));
+
+    newFunction((double) imagen.size());
+}
+
+
+void Histograma::histAcumNorm() {
+    hist = QVector<double>(imagen.M());
+    for (int vin = 0; vin < imagen.M(); vin++)
+        hist.insert(vin, imagen.hAcumNorm(vin));
+
+    newFunction(1.0);
+}
+

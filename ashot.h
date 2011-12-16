@@ -12,6 +12,8 @@
 #include "Imagen/histograma.h"
 #include "Imagen/perfil.h"
 #include "Imagen/tramos.h"
+#include "Imagen/hespecif.h"
+#include "Imagen/digitalizar.h"
 
 namespace Ui {
     class aShot;
@@ -27,6 +29,7 @@ public:
 
     void abrir();
     void updateImageLabel();
+    void updateAll(); //actualiza imagen y imageLabel
 
     Imagen imagen; //imagen entera que se usa
     Imagen imagenRect; //imagen de region seleccionada (si no hay region es igual a imagen), esta es realmente con la que se trabaja
@@ -39,6 +42,8 @@ private:
     Histograma * histograma;
     Perfil * perfil;
     Tramos * tramos;
+    Hespecif * hespecif;
+    Digitalizar * digit; //digitalizar imagen: se aplica a la imagen entera (los demas widgets lo hacen en imagenRect)
 
     aShot * a;
 
@@ -85,11 +90,15 @@ private slots:
 
     //para sacar widgets
     void showNewBC(); //crea bc y lo muestra
-    void applyDestroyBC(); //aplica los cambios hechos despues de cerrar el widget BrilloContraste
+    void applyBC(); //aplica los cambios hechos despues de cerrar el widget BrilloContraste
     void showNewLogexp();
-    void applyDestroyLogexp();
+    void applyLogexp();
     void showNewTramos();
     void applyDestroyTramos();
+    void showNewHespecif();
+    void applyHespecif();
+    void showNewDigit();
+    void applyDigit();
 
     void showNewHistograma();
     void showNewPerfil();
