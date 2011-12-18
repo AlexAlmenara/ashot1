@@ -32,7 +32,7 @@ void Perfil::updatePunto() {
 
 
 void Perfil::newFunction(double ymax) {
-    function = new Function(this, hist, 0, imagen.size() - 1, 0, ymax); //por defecto histograma absoluto
+    function = new Function(this, hist, 0, imagen.nDiagonal() - 1, 0, ymax); //por defecto histograma absoluto
     function->resize(400, 200);
     function->show();
     function->move(40, 20);
@@ -41,36 +41,41 @@ void Perfil::newFunction(double ymax) {
 
 
 void Perfil::perfil() {
-    hist = QVector<double>(imagen.size());
-    for (int vin = 0; vin < imagen.size(); vin++)
-        hist.insert(vin, imagen.perfil(vin));
+    hist = QVector<double>(imagen.nDiagonal());
+    //printf("nDiagonal: %d\n", imagen.nDiagonal());
+    for (int i = 0; i < imagen.nDiagonal(); i++) //recorre la diagonal
+        hist.insert(i, imagen.perfil(i));
 
     newFunction((double) imagen.M());
 }
 
 void Perfil::dperfil() {
-    hist = QVector<double>(imagen.size());
-    for (int vin = 0; vin < imagen.size(); vin++)
-        hist.insert(vin, imagen.dperfil(vin));
+    hist = QVector<double>(imagen.nDiagonal());
+    for (int i = 0; i < imagen.nDiagonal(); i++) //recorre la diagonal
+        hist.insert(i, imagen.dperfil(i));
 
     newFunction((double) imagen.M());
 }
 
 
 void Perfil::perfilSuave() {
-    hist = QVector<double>(imagen.size());
-    for (int vin = 0; vin < imagen.size(); vin++)
-        hist.insert(vin, imagen.perfilSuave(vin));
+    hist = QVector<double>(imagen.nDiagonal());
+    for (int i = 0; i < imagen.nDiagonal(); i++) //recorre la diagonal
+        hist.insert(i, imagen.perfilSuave(i));
 
     newFunction((double) imagen.M());
 }
 
 
 void Perfil::dperfilSuave() {
-    hist = QVector<double>(imagen.size());
-    for (int vin = 0; vin < imagen.size(); vin++)
-        hist.insert(vin, imagen.dperfilSuave(vin));
+    hist = QVector<double>(imagen.nDiagonal());
+    for (int i = 0; i < imagen.nDiagonal(); i++) //recorre la diagonal
+        hist.insert(i, imagen.dperfilSuave(i));
 
     newFunction((double) imagen.M());
 }
+
+
+
+
 

@@ -1,14 +1,14 @@
 #include "histograma.h"
 #include "ui_histograma.h"
 
-Histograma::Histograma(QWidget *parent, Imagen imagen) :
+Histograma::Histograma(QWidget *parent, Imagen image) :
     QWidget(parent),
     ui(new Ui::Histograma)
 {
     ui->setupUi(this);
 
 
-    this->imagen = imagen;
+    this->imagen = image;
     setWindowTitle("Histograma de " + imagen.fileName());
 
     connect(ui->radioButtonAbs, SIGNAL(clicked()), this, SLOT(histAbs()));
@@ -16,7 +16,21 @@ Histograma::Histograma(QWidget *parent, Imagen imagen) :
     connect(ui->radioButtonAcum, SIGNAL(clicked()), this, SLOT(histAcum()));
     connect(ui->radioButtonAcumNorm, SIGNAL(clicked()), this, SLOT(histAcumNorm()));
     ui->radioButtonAbs->setChecked(true); //empieza por defecto histograma absoluto
+    //firstPainted = false;
     histAbs();
+    //firstPainted = true;
+
+
+    /*hist = QVector<double>(imagen.M());
+    for (int vin = 0; vin < imagen.M(); vin++)
+        hist.insert(vin, imagen.hAbs(vin));
+
+    function = new Function(this, hist, 0, imagen.M() - 1, 0, imagen.maxh()); //por defecto histograma absoluto
+    function->resize(400, 200);
+    function->show();
+    function->move(40, 20);
+    ui->verticalLayout->addWidget(function);
+    connect(function, SIGNAL(moused()), this, SLOT(updatePunto()));*/
 
 }
 
@@ -38,15 +52,21 @@ void Histograma::updatePunto() {
 
 
 void Histograma::newFunction(double ymax) {
-    //ui->verticalLayout->removeWidget(function);
+    //if (firstPainted)
+        //ui->verticalLayout->removeWidget(function);
+        //ui->formLayout->removeWidget(function);
+        //ui->gridLayout->removeWidget(function);
+
     function = new Function(this, hist, 0, imagen.M() - 1, 0, ymax); //por defecto histograma absoluto
     function->resize(400, 200);
     function->show();
 
-    //ui->verticalLayout->addWidget(function);
     //ui->horizontalLayoutFunction->setGeometry((const QRect) QRect(function->size().width(), function->size().height()));
     //ui->horizontalLayoutFunction->addWidget(function);
     function->move(40, 20);
+    //ui->verticalLayout->addWidget(function);
+    //ui->formLayout->addWidget(function);
+    //ui->gridLayout->addWidget(function);
     connect(function, SIGNAL(moused()), this, SLOT(updatePunto()));
 }
 

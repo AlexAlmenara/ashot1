@@ -17,6 +17,10 @@ private:
     int Mniveles; //numero total de niveles
     QString name; //nombre de la imagen (ruta absoluta)
     int err; //error: imagen null, o se usa un formato que no hemos albergado para vect
+
+    double dist_diag; //numero de pixeles seguidos en la diagonal por ser imagen cuadrada
+    int n_diag; //numero de pixeles de la diagonal
+
     void createHist();
 
 public:
@@ -27,6 +31,7 @@ public:
 
     QImage qimage;
 
+    int nDiagonal(); //n_diag
     int error(); //se saca el error para que lo lea aShot y sace un MessageBox
     int M(); //numero total de niveles
     int maxh(); //maximo valor de frecuencia (sin saber de q nivel es, es solo para saber dibujar histograma
@@ -55,10 +60,11 @@ public:
 
     void pegarImagen(Imagen image, QPoint p1); //pega image desde punto p1. donde se salga, por supuesto no hace nada. // QPoint p2 = QPoint(-1, -1));
 
-    int perfil(int x, int y);
-    int perfil(int i);
-    int dperfil(int i); //derivada de la funcion perfil
+    int gray(int i); //devuelve nivel de gris de posicion dada
+    int gray(int x, int y);
 
+    int perfil(int i);  //funcion perfil (diagonal)
+    int dperfil(int i); //derivada de la funcion perfil
     int perfilSuave(int i);  //perfil suavizado: media de pixel i sus dos vecinos
     int dperfilSuave(int i);
     //void setPixel(int value);

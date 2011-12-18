@@ -14,7 +14,7 @@ class Histograma : public QWidget
     Q_OBJECT
 
 public:
-    explicit Histograma(QWidget *parent = 0, Imagen imagen = Imagen());
+    explicit Histograma(QWidget *parent = 0, Imagen image = Imagen());
     ~Histograma();
 
 private:
@@ -23,6 +23,9 @@ private:
     QVector<double> hist;
     Function * function;
     Imagen imagen;
+
+    //int maxh; //por si el usuario quiere especificar una escala diferente en y (puede pasar que no se vea bien
+    //bool firstPainted;
 
     void newFunction(double ymax);
 

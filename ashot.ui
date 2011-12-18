@@ -114,6 +114,7 @@
      <addaction name="actionLog_Exp"/>
      <addaction name="actionHespecif"/>
      <addaction name="actionDigitalizar"/>
+     <addaction name="actionDiferencia"/>
     </widget>
     <addaction name="menuAjustes"/>
     <addaction name="separator"/>
@@ -311,6 +312,11 @@
   <action name="actionDigitalizar">
    <property name="text">
     <string>Digitalizar</string>
+   </property>
+  </action>
+  <action name="actionDiferencia">
+   <property name="text">
+    <string>Diferencia</string>
    </property>
   </action>
  </widget>
