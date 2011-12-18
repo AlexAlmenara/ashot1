@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     Imagen/tramos.cpp \
     function.cpp \
     Imagen/hespecif.cpp \
-    Imagen/digitalizar.cpp
+    Imagen/digitalizar.cpp \
+    Imagen/diferencia.cpp
 
 HEADERS  += ashot.h \
     Ayuda/ayuda.h \
@@ -33,7 +34,8 @@ HEADERS  += ashot.h \
     Imagen/tramos.h \
     function.h \
     Imagen/hespecif.h \
-    Imagen/digitalizar.h
+    Imagen/digitalizar.h \
+    Imagen/diferencia.h
 
 FORMS    += ashot.ui \
     Ayuda/ayuda.ui \
@@ -44,10 +46,14 @@ FORMS    += ashot.ui \
     Imagen/tramos.ui \
     function.ui \
     Imagen/hespecif.ui \
-    Imagen/digitalizar.ui
+    Imagen/digitalizar.ui \
+    Imagen/diferencia.ui
 
 RESOURCES += \
     resources/aShotResources.qrc
+
+
+
 
 
 

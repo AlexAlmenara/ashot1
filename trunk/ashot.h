@@ -14,6 +14,7 @@
 #include "Imagen/tramos.h"
 #include "Imagen/hespecif.h"
 #include "Imagen/digitalizar.h"
+#include "Imagen/diferencia.h"
 
 namespace Ui {
     class aShot;
@@ -37,13 +38,15 @@ public:
 private:
     Ui::aShot *ui;
     BrilloContraste * bc;
-    Ayuda * ayuda;
     Logexp * logexp;
-    Histograma * histograma;
-    Perfil * perfil;
     Tramos * tramos;
     Hespecif * hespecif;
     Digitalizar * digit; //digitalizar imagen: se aplica a la imagen entera (los demas widgets lo hacen en imagenRect)
+    Diferencia * diferencia;
+
+    Ayuda * ayuda;
+    //Histograma * histograma;
+    //Perfil * perfil;
 
     aShot * a;
 
@@ -99,6 +102,8 @@ private slots:
     void applyHespecif();
     void showNewDigit();
     void applyDigit();
+    void showNewDiferencia();
+    void applyDiferencia();
 
     void showNewHistograma();
     void showNewPerfil();

@@ -87,8 +87,29 @@ void Imagen::createHist() {
 
 void Imagen::update() {
     createHist();
+
+    //actualizacion para diagonal (perfil)
+    if (width() == height()) { //imagen cuadrada
+        n_diag = width();
+        dist_diag = 1;
+        return;
+    }
+
+    if (width() > height()) { //ancho mayor
+        dist_diag = (double) width() / (double) height();
+        n_diag = width();
+        return;
+    }
+
+    //else: mayor alto
+    dist_diag = (double) height() / (double) width();
+    n_diag = height();
 }
 
+
+int Imagen::nDiagonal() { //n_diag
+    return n_diag;
+}
 
 
 void Imagen::transformar(int * vout) {
@@ -270,17 +291,30 @@ QImage Imagen::qImage() {
 }*/
 
 
-int Imagen::perfil(int i) {
+int Imagen::gray(int i) {
     return qGray(qimage.color(i));
 }
 
-int Imagen::perfil(int x, int y) {
+int Imagen::gray(int x, int y) {
     return qGray(qimage.pixel(x, y));
 }
 
 
+int Imagen::perfil(int i) {
+    if (width() == height()) //imagen cuadrada
+        return gray(i, i);
+
+    if (width() > height()) //ancho mayor
+        return gray(i, (int) ((double) i / dist_diag));
+
+    //else: mayor alto
+    return gray((int) ((double) i / dist_diag), i);
+
+}
+
+
 int Imagen::dperfil(int i) {
-    if ((i == 0) || (i == size()))
+    if ((i == 0) || (i == nDiagonal() - 1))
         return perfil(i);
 
     return perfil(i + 1) - perfil(i);
@@ -292,7 +326,7 @@ int Imagen::perfilSuave(int i) {
     if (i == 0)
         return (int) ((double) (perfil(0) + perfil(1)) / 2.0);
     else
-        if (i == size())
+        if (i == nDiagonal() - 1)
            return (int) ((double) (perfil(i - 1) + perfil(i)) / 2.0);
         else
             return (int) ((double) (perfil(i - 1) + perfil(i) + perfil(i + 1)) / 3.0);
@@ -300,7 +334,7 @@ int Imagen::perfilSuave(int i) {
 
 
 int Imagen::dperfilSuave(int i) {
-    if ((i == 0) || (i == size()))
+    if ((i == 0) || (i == nDiagonal() - 1))
         return perfilSuave(i);
 
     return perfilSuave(i + 1) - perfilSuave(i);

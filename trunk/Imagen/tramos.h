@@ -9,6 +9,8 @@ namespace Ui {
     class Tramos;
 }
 
+//typedef tPunto
+
 class Tramos : public QWidget
 {
     Q_OBJECT

@@ -48,7 +48,7 @@ aShot::aShot(QWidget *parent) :
 
     //setAttribute(Qt::WA_OpaquePaintEvent);
     connectActions();
-    //abrir(); //para acelerar la depuracion
+    abrir(); //para acelerar la depuracion
 
     //setMouseTracking(false);
 }
@@ -85,7 +85,7 @@ void aShot::mousePressEvent(QMouseEvent* event) {
         int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
         int y = event->y() - ui->scrollArea->pos().y();
         if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
-            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ") = " + QString::number(imagen.perfil(x, y)));
+            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ") = " + QString::number(imagen.gray(x, y)));
             p1 = QPoint(x, y);
         }
     }
@@ -97,7 +97,7 @@ void aShot::mouseMoveEvent(QMouseEvent *event) {
         int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
         int y = event->y() - ui->scrollArea->pos().y();
         if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
-            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ") = " + QString::number(imagen.perfil(x, y))); //tambien: event->x()
+            ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ") = " + QString::number(imagen.gray(x, y))); //tambien: event->x()
             p2 = QPoint(x, y);
             update(); //update widget. tambien: repaint()
         }
@@ -168,7 +168,7 @@ void aShot::cerrarTodo() {
 }
 
 void aShot::abrir() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //"/home/alex/Escritorio/patricia-conde6.jpg";
+    QString fileName = "/home/alex/Escritorio/berserk.jpg"; //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //
 
     if (!fileName.isEmpty()) {
         imagen = Imagen(fileName);
@@ -341,13 +341,13 @@ void aShot::negativo() {
 
 //slots de tratamiento para ventanitas de edicion de imagen
 void aShot::showNewHistograma() {
-    histograma = new Histograma(0, imagenRect);
+    Histograma * histograma = new Histograma(0, imagenRect);
     histograma->show();
 }
 
 
 void aShot::showNewPerfil() {
-    perfil = new Perfil(0, imagenRect);
+    Perfil * perfil = new Perfil(0, imagenRect);
     perfil->show();
 }
 
@@ -424,66 +424,58 @@ void aShot::applyDigit() {
     updateAll();
 }
 
+void aShot::showNewDiferencia() {
+    diferencia = new Diferencia(0, imagenRect);
+    connect(diferencia, SIGNAL(changed()), this, SLOT(applyDiferencia()));
+    diferencia->show();
+}
+
+void aShot::applyDiferencia() {
+    imagenRect = diferencia->imagenAux;
+    updateAll();
+}
 
 
-void aShot::prueba() {
+
+void aShot::prueba() { //pintar negro en diagonal
     if (imagen.qimage.format() != 3) { //8-bit indexado, monocromo
         QMessageBox::information(this, tr("Informacion de la imagen"), "no es monocromo indexado");
         return;
     }
 
-    /*QRgb value;
-    value = qRgb(122, 163, 39); // 0xff7aa327
-    imagen.qimage.setColor(0, value);
+    int N; //altura o anchura de imagen
+    if (imagenRect.width() > imagenRect.height())
+        N = imagenRect.width();
+    else
+        N = imagenRect.height();
 
-    value = qRgb(237, 187, 51); // 0xffedba31
-    imagen.qimage.setColor(1, value);
+    for (int i = 0; i < N; i++) {//recorre diagonal
 
-    //value = qRgb(189, 149, 39); // 0xffbd9527
-    //image.setColor(2, value);
+        if (imagenRect.width() == imagenRect.height()) //imagen cuadrada
+            imagenRect.qimage.setPixel(i, i, 0);
 
-    for (int i = 0; i < imagen.width(); i++)
-        for (int j = 0; j < imagen.height(); j++) {
-            if (i == j)
-                imagen.qimage.setPixel(i, j, 0);
-            else
-                imagen.qimage.setPixel(i, j, 1);
+        double dist_diag; //numero de pixeles seguidos en la diagonal por ser imagen cuadrada
+        int n_diag; //numero de pixeles de la diagonal
+
+        if (imagenRect.width() > imagenRect.height()) { //ancho mayor
+            dist_diag = (double) imagenRect.width() / (double) imagenRect.height();
+            n_diag = imagenRect.width();
+            //printf("\nmayor ancho setpixel: (%d, %d)", i, (int) ((double) i / dist_diag));
+            imagenRect.qimage.setPixel(i, (int) ((double) i / dist_diag), 0);
         }
-    */
 
-    int ntramos = 3;
-    double * A = new double[ntramos];
-    double * B = new double [ntramos];
-    int * extremos = new int [ntramos]; //seria ntramos -1, pero se queda uno mas para q no se qede size 0 en caso de q ntramos=1
-    int tramo_i = 0; //tramo actual
-    //tambien: Qimage.setColorTable(QVector<QRgb>)
-    int * vout = new int [imagen.M()]; //tabla LUT
+        if (imagenRect.width() < imagenRect.height()) { //alto mayor
+            dist_diag = (double) imagenRect.height() / (double) imagenRect.width();
+            n_diag = height();
+            //printf("\nmayor alto setpixel: (%d, %d)", (int) ((double) i / dist_diag), i);
+            imagenRect.qimage.setPixel((int) ((double) i / dist_diag), i, 0);
+        }
+    } //for
 
-    //intro datos
-    A[0] = 3; B[0] = 2;
-    A[1] = 3; B[1] = 0;
-    A[2] = 0.3; B[2] = -1;
-    extremos[0] = 20; //nivel 20
-    extremos[1] = 180;
-    //fin intro datos
-    for (int vin = 0; vin < imagen.M(); vin++) {
+    imagenRect.update();
+    updateAll();  //actualiza label
 
-        if (ntramos > 1)
-            if (vin == extremos[tramo_i])
-                tramo_i++; //siguiente tramo
-
-        vout[vin] = (int) (A[tramo_i] * (double) vin + B[tramo_i]);
-        if (vout[vin] > imagen.M() - 1) //en caso de que se haya salido del rango de niveles (0..255)
-            vout[vin] = imagen.M() - 1;
-        else
-            if (vout[vin] < 0)
-                vout[vin] = 0;
-    }
-
-     imagen.transformar(vout);
-     updateImageLabel();  //actualiza label
-
- }
+}
 
 
 
@@ -512,6 +504,7 @@ void aShot::ecualizar() { //ecualizacion del histograma: aproximacion de distrib
 //funciones privadas:
 
 void aShot::connectActions() {   //conecta acciones. las que haga falta una imagen abierta empiezan desactivadas
+    //connect(this, SIGNAL(destroyed()), qApp, SLOT(quit()));
     connect(ui->action_Salir, SIGNAL(triggered()), qApp, SLOT(quit())); //es igual que ponerlo en el Signal/Slot Editor
     //connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(createNewWindow()));
     connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(abrirNew()));
@@ -536,6 +529,8 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     ui->actionHespecif->setEnabled(false);
     connect(ui->actionDigitalizar, SIGNAL(triggered()), this, SLOT(showNewDigit()));
     ui->actionDigitalizar->setEnabled(false);
+    connect(ui->actionDiferencia, SIGNAL(triggered()), this, SLOT(showNewDiferencia()));
+    ui->actionDiferencia->setEnabled(false);
 
     connect(ui->actionAjustar_a_ventana, SIGNAL(triggered()), this, SLOT(fitToWindow()));
     ui->actionAjustar_a_ventana->setEnabled(false);
@@ -586,6 +581,7 @@ void aShot::enableActions() {
     ui->actionTramos->setEnabled(true);
     ui->actionHespecif->setEnabled(true);
     ui->actionDigitalizar->setEnabled(true);
+    ui->actionDiferencia->setEnabled(true);
 
     ui->actionAjustar_a_ventana->setEnabled(true);
     ui->action_Cerrar->setEnabled(true);

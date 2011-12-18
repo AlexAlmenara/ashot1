@@ -88,20 +88,20 @@ void Tramos::aceptar() {
 
     /*for (int i = 0; i <= nTramos; i++)
         printf("%d: (%d, %d)\n", i, puntos[i].x(), puntos[i].y());*/
+    double valor;
 
     for (int vin = 0; vin < imagenAux.M(); vin++) {
 
         if ((vin > puntos[tramo_i + 1].x()) && (tramo_i < nTramos - 1) && (nTramos > 1)) //x es el limite i
             tramo_i++; //siguiente tramo
 
-        //printf(", tramoi: %d", tramo_i);
-
         //vout = A*vin + B
-        vout[vin] = puntos[tramo_i + 1].x() - puntos[tramo_i].x(); //max - min
-        if (vout[vin] == 0) vout[vin] = 1;
-        vout[vin] = (int) (((double) (puntos[tramo_i + 1].y() - puntos[tramo_i].y())) / ((double) (vout[vin]))); //(H-L) / (max -min)
-        vout[vin] = puntos[tramo_i].y() + ((vin - puntos[tramo_i].x()) * vout[vin]); // L + (vin - min) * anterior
-        //vout[vin] = 200;
+        valor = (double) (puntos[tramo_i + 1].x() - puntos[tramo_i].x()); //max - min
+        if (valor == 0.0) valor = 1.0;
+        valor = ((double) (puntos[tramo_i + 1].y() - puntos[tramo_i].y())) / valor; //(H-L) / (max -min)
+        valor = (double) (puntos[tramo_i].y() + ((double) (vin - puntos[tramo_i].x()) * valor)); // L + (vin - min) * anterior
+        //printf("\nvin: %d, valor: %f", vin, valor);
+        vout[vin] = (int) valor;
 
         if (vout[vin] > imagenAux.M() - 1) //en caso de que se haya salido del rango de niveles (0..255)
             vout[vin] = imagenAux.M() - 1;
@@ -109,6 +109,9 @@ void Tramos::aceptar() {
             if (vout[vin] < 0)
                 vout[vin] = 0;
     }
+
+    //for (int i = 0; i < imagenAux.M(); i++)
+      //  printf("\nvin %d, vout: %d", i, vout[i]);
 
     imagenAux.transformar(vout); //transformacion. tambien hace el update de histograma
 
@@ -128,7 +131,7 @@ void Tramos::cancelar() {
 
 
 /*
-void aShot::prueba() {
+void aShot::prueba() { //especificar A y B
     if (imagen.qimage.format() != 3) { //8-bit indexado, monocromo
         QMessageBox::information(this, tr("Informacion de la imagen"), "no es monocromo indexado");
         return;

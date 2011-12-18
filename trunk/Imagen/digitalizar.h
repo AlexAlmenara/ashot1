@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "imagen.h"
+#include "math.h"
 
 namespace Ui {
     class Digitalizar;
