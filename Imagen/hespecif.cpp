@@ -56,6 +56,7 @@ void Hespecif::updateLabel() {
 void Hespecif::aceptar() {
     this->close();
     emit(changed()); //no hace falta, ya lo hace abrir
+    emit(acepted());
     delete this;
 }
 

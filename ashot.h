@@ -28,14 +28,17 @@ public:
     explicit aShot(QWidget *parent = 0);
     ~aShot();
 
-    void abrir();
-    void updateImageLabel();
-    void updateAll(); //actualiza imagen y imageLabel
-
-    Imagen imagen; //imagen entera que se usa
-    Imagen imagenRect; //imagen de region seleccionada (si no hay region es igual a imagen), esta es realmente con la que se trabaja
 
 private:
+    Imagen imagen; //imagen entera que se usa
+    Imagen imagenRect; //imagen de region seleccionada (si no hay region es igual a imagen), esta es realmente con la que se trabaja
+    Imagen imagenAnt; //imagen anterior a cambio para volcarla luego en Deshacer
+
+    QStack<Imagen> undo; //vectores para guardar ultimos cambios
+    QStack<Imagen> redo;
+
+    QLabel labelAnt; //label de la imagen anterior
+
     Ui::aShot *ui;
     BrilloContraste * bc;
     Logexp * logexp;
@@ -60,8 +63,12 @@ private:
     QPrinter printer;
 #endif
 
+    void abrir();
+    void updateImageLabel();
+    void updateAll(); //actualiza imagen y imageLabel
+
     void connectActions();
-    void enableActions();
+    void enableActions(bool b);
     void updateZoomActions();
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
@@ -76,7 +83,7 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *);
     //void mouseGrabber();
 
-private slots:
+public slots:
     void abrirNew();
     void cerrarTodo();
     void imprimir();
@@ -90,6 +97,12 @@ private slots:
     void guardarComo();
     void toGray(); //convierte imagen a escala de grises. DOS COSAS: una para convertir formato de imagen, y otra blanco/negro de imagenRect
     void negativo(); //convierte imagen a negativo
+
+    void addDeshacer();
+    void deshacer();
+    void rehacer();
+    void anteriorHistograma();
+    void anteriorImagen();
 
     //para sacar widgets
     void showNewBC(); //crea bc y lo muestra

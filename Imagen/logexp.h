@@ -36,11 +36,12 @@ private:
 
 signals:
     void changed();
+    void acepted();
 
 public slots:
     void cambiarImagen();
     void aceptar();
-    void cancelar();
+    void cancelar();  
 
 
 };

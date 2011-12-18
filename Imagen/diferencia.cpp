@@ -51,6 +51,7 @@ void Diferencia::updateLabel() {
 void Diferencia::aceptar() {
     this->close();
     emit(changed()); //no hace falta, ya lo hace abrir
+    emit(acepted());
     delete this;
 }
 
@@ -80,13 +81,12 @@ void Diferencia::abrir() { //reinicia, abre otra imagen y ejecuta la conversion
         for (int i = 0; i < imagenAux.width(); i++) // igual: qimage.width()
             for (int j = 0; j < imagenAux.height(); j++)
                 imagenAux.qimage.setPixel(i, j, dif(i, j));
-            imagenAux.update();
 
-        //printf("eyy changeddd");
-        emit(changed());
+        imagenAux.update();
+        //emit(changed());
     } //if
 
-    //emit(changed());
+    emit(changed());
 }
 
 
@@ -113,7 +113,7 @@ void Diferencia::i1_cambios() {
 
     if (min < 0) min = 0;
     if (max > imagenAux.M() - 1) max = imagenAux.M() - 1;
-    printf("\nrango: [%d, %d]", min, max);
+    //printf("\nrango: [%d, %d]", min, max);
 
     for (int i = 0; i < i1.width(); i++)
         for (int j = 0; j < i1.height(); j++)
@@ -135,7 +135,6 @@ void Diferencia::i2_cambios() {
 
     if (min < 0) min = 0;
     if (max > imagenAux.M() - 1) max = imagenAux.M() - 1;
-    printf("\nrango: [%d, %d]", min, max);
 
     for (int i = 0; i < i2.width(); i++)
         for (int j = 0; j < i2.height(); j++)

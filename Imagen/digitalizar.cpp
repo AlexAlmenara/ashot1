@@ -29,7 +29,7 @@ Digitalizar::~Digitalizar()
 
 void Digitalizar::cancelar() {
     close();
-    emit(changed());
+    emit(closed());
 }
 
 
@@ -79,7 +79,7 @@ void Digitalizar::aceptar() {
     } //if
 
     this->close();
-    emit(changed()); //se emite signal
+    emit(closed()); //se emite signal
 }
 
 

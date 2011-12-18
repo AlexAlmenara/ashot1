@@ -45,9 +45,12 @@ aShot::aShot(QWidget *parent) :
     resize(600, 500);
 
     hasImage = false;
+    undo = QStack<Imagen>();
+    redo = QStack<Imagen>();
 
     //setAttribute(Qt::WA_OpaquePaintEvent);
     connectActions();
+    enableActions(false);
     abrir(); //para acelerar la depuracion
 
     //setMouseTracking(false);
@@ -78,6 +81,24 @@ void aShot::pegarImagenRect() {
 
 
 
+void aShot::updateAll() { //actualiza imagen y imageLabel
+    pegarImagenRect();
+    updateImageLabel();
+}
+
+
+
+void aShot::addDeshacer() { //se añade tras un cambio en la imagen
+    undo.push(imagenAnt);
+    ui->actionDeshacer->setEnabled(true);
+
+    ui->actionAnterior_histograma->setEnabled(true);
+    ui->actionAnterior_imagen->setEnabled(true);
+    redo.clear(); //ya no hay nada que rehacer
+    ui->actionRehacer->setEnabled(false);
+}
+
+
 //protected: events
 void aShot::mousePressEvent(QMouseEvent* event) {
     if (hasImage) {
@@ -96,7 +117,7 @@ void aShot::mouseMoveEvent(QMouseEvent *event) {
         //printf("(%d, %d)", ui->scrollArea->pos().x(), ui->scrollArea->pos().y());
         int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
         int y = event->y() - ui->scrollArea->pos().y();
-        if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
+        if ((x < ui->imageLabel->width()) && (y < ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
             ui->statusBar->showMessage((const QString) "(" + QString::number(x) + ", " + QString::number(y) + ") = " + QString::number(imagen.gray(x, y))); //tambien: event->x()
             p2 = QPoint(x, y);
             update(); //update widget. tambien: repaint()
@@ -141,13 +162,7 @@ void aShot::paintEvent(QPaintEvent *) {
 
 
 
-
 //slots:
-
-void aShot::updateAll() { //actualiza imagen y imageLabel
-    pegarImagenRect();
-    updateImageLabel();
-}
 
 void aShot::abrirNew() {
     if (!this->hasImage)
@@ -162,6 +177,11 @@ void aShot::abrirNew() {
 void aShot::cerrarTodo() {
     qApp->closeAllWindows();
     ui->imageLabel->setPixmap(NULL);
+    //ui->imageLabel = new QLabel();
+    enableActions(false);
+    undo.clear();
+    redo.clear();
+
     this->show();
     //imagen = nada, no hace falta
     hasImage = false;
@@ -178,7 +198,7 @@ void aShot::abrir() {
         }
 
         resize(imagen.width(), imagen.height() + 200); //+ las barras etc
-        enableActions();
+        enableActions(true);
         updateZoomActions();
         updateImageLabel();
         hasImage = true;
@@ -246,6 +266,55 @@ void aShot::fitToWindow() {
 }
 
 
+
+void aShot::deshacer() {
+  //if (undo.size > 0)
+  redo.push(imagen); //guarda por si nos equivocamos con deshacer y queremos volver
+  ui->actionRehacer->setEnabled(true);
+
+  imagen = undo.pop(); //quita de la pila y lo devuelve
+  imagenRect = imagen;
+  if (undo.size() == 0) { //ya no hay mas que deshacer
+      ui->actionDeshacer->setEnabled(false);
+      ui->actionAnterior_histograma->setEnabled(false);
+      ui->actionAnterior_imagen->setEnabled(false);
+   }
+
+  updateAll();
+
+}
+
+void aShot::rehacer() {
+    //if (redo.size() > 0)
+    //addDeshacer(); //es lo mismo que:
+    undo.push(imagen);
+    ui->actionDeshacer->setEnabled(true); //por si se hizo todos los deshacer posibles
+    ui->actionAnterior_histograma->setEnabled(true);
+    ui->actionAnterior_imagen->setEnabled(true);
+
+    imagen = redo.pop(); //quita de la pila y lo devuelve
+    imagenRect = imagen;
+    if (redo.size() == 0) //ya no hay mas que deshacer
+        ui->actionRehacer->setEnabled(false);
+
+    updateAll();
+}
+
+
+void aShot::anteriorImagen() { //solo se ejecutara si undo tiene algo
+    labelAnt.setPixmap(QPixmap::fromImage(undo.top().qimage));
+    labelAnt.show();
+    labelAnt.move(this->x() + 600, this->y());
+}
+
+
+
+void aShot::anteriorHistograma() { //solo se ejecutara si undo tiene algo
+    Histograma * hist = new Histograma(0, undo.top());
+    hist->show();
+}
+
+
 void aShot::info_imagen() {
     /*if (imagen == NULL)
         QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
@@ -301,10 +370,13 @@ void aShot::acercade() {
 
 
 void aShot::toGray() {
-    //QVector<QRgb> tabla = QVector<QRgb>();
+    QVector<QRgb> tabla = QVector<QRgb>(256);
     //tabla.append(pix);
     //pix = imagen.qimage.color(indice); //devuelve rgb del indice de tabla indexada
     //indice = imagen.qimage.pixelIndex(i, j); //devuelve el indice de la tabla indexada
+
+
+    /*imagen.qimage = imagen.qimage.convertToFormat(QImage::Format_Indexed8); //3: escala de grises indexad
 
     QRgb pix;
     int value;
@@ -320,10 +392,47 @@ void aShot::toGray() {
                 value = 0;
 
             pix = qRgb(value, value, value);
+            imagen.qimage.setColor(value, pix);
+            imagen.qimage.setPixel(i, j, value); //escritura tipo imagen RGB, diferente de 8 bits indexado
+        }*/
+
+    imagenAnt = imagen;
+    addDeshacer();
+
+
+    QRgb pix;
+    int value;
+    for (int i = 0; i < imagen.width(); i++) // igual: qimage.width()
+        for (int j = 0; j < imagen.height(); j++) {
+            pix = imagen.qimage.pixel(i, j);
+            value = (int) ((0.299 * (double) qRed(pix) + 0.587 * (double) qGreen(pix) + 0.114 * (double) qBlue(pix)) + 0.5); //NTSC
+            //value = qGray(pix); //es casi equivalente
+            if (value > imagen.M() - 1)
+                value = imagen.M() - 1;
+
+            if (value < 0)
+                value = 0;
+
+            pix = qRgb(value, value, value);
+            tabla.remove(value);
+            tabla.insert(value, pix);
             imagen.qimage.setPixel(i, j, pix); //escritura tipo imagen RGB, diferente de 8 bits indexado
         }
 
-    imagen.qimage = imagen.qimage.convertToFormat(QImage::Format_Indexed8); //3: escala de grises indexado
+    /*for (int i = 0; i < tabla.size(); i++)
+        printf("%d, ", qGray(tabla[i]));*/
+
+    imagen.qimage = imagen.qimage.convertToFormat(QImage::Format_Indexed8, tabla); //3: escala de grises indexado
+
+    /*for (int i = 0; i < imagen.width(); i++) // igual: qimage.width()
+        for (int j = 0; j < imagen.height(); j++) {
+            pix = imagen.qimage.pixel(i, j);
+            value = qGray(pix);
+            pix = qRgb(value, value, value);
+            imagen.qimage.setColor(value, pix);
+            //imagen.qimage.setPixel(i, j, value);
+        }*/
+
 
     imagen.update();
     updateImageLabel();
@@ -332,6 +441,8 @@ void aShot::toGray() {
 
 
 void aShot::negativo() {
+    imagenAnt = imagen;
+    addDeshacer();
     imagenRect.qimage.invertPixels(); //el negativo de la imagen. tambien se podria con un bucle con imagen.negativo(vin)
 
     imagenRect.update();
@@ -354,9 +465,11 @@ void aShot::showNewPerfil() {
 
 void aShot::showNewBC() { //crea bc y lo muestra
     bc = new BrilloContraste(0, imagenRect);
+    imagenAnt = imagen;
     //this->bc = new BrilloContraste(this); //esto se hara una vez abierta la imagen
     //connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this->bc, SLOT(show()));
     connect(bc, SIGNAL(changed()), this, SLOT(applyBC()));
+    connect(bc, SIGNAL(acepted()), this, SLOT(addDeshacer()));
     bc->show();
 }
 
@@ -376,7 +489,9 @@ void aShot::applyBC() {
 
 void aShot::showNewLogexp() {
     logexp = new Logexp(0, imagenRect);
+    imagenAnt = imagen;
     connect(logexp, SIGNAL(changed()), this, SLOT(applyLogexp()));
+    connect(logexp, SIGNAL(acepted()), this, SLOT(addDeshacer()));
     logexp->show();
 }
 
@@ -388,11 +503,13 @@ void aShot::applyLogexp() {
 
 void aShot::showNewTramos() {
     tramos = new Tramos(0, imagenRect);
+    imagenAnt = imagen;
     connect(tramos, SIGNAL(closed()), this, SLOT(applyDestroyTramos()));
     tramos->show();
 }
 
 void aShot::applyDestroyTramos() {
+    addDeshacer();
     imagenRect = tramos->imagenAux;
     updateAll();
     //delete tramos;
@@ -401,7 +518,9 @@ void aShot::applyDestroyTramos() {
 
 void aShot::showNewHespecif() {
     hespecif = new Hespecif(0, imagenRect);
+    imagenAnt = imagen;
     connect(hespecif, SIGNAL(changed()), this, SLOT(applyHespecif()));
+    connect(hespecif, SIGNAL(acepted()), this, SLOT(addDeshacer()));
     hespecif->show();
 }
 
@@ -413,20 +532,24 @@ void aShot::applyHespecif() {
 
 
 void aShot::showNewDigit() {
-    digit = new Digitalizar(0, imagen);
-    connect(digit, SIGNAL(changed()), this, SLOT(applyDigit()));
+    digit = new Digitalizar(0, imagenRect);
+    imagenAnt = imagen;
+    connect(digit, SIGNAL(closed()), this, SLOT(applyDigit()));
     digit->show();
 }
 
 void aShot::applyDigit() {
-    imagen = digit->imagenAux;
-    imagenRect = imagen;
+    //imagen = digit->imagenAux;
+    addDeshacer();
+    imagenRect = digit->imagenAux;
     updateAll();
 }
 
 void aShot::showNewDiferencia() {
     diferencia = new Diferencia(0, imagenRect);
+    imagenAnt = imagen;
     connect(diferencia, SIGNAL(changed()), this, SLOT(applyDiferencia()));
+    connect(diferencia, SIGNAL(acepted()), this, SLOT(addDeshacer()));
     diferencia->show();
 }
 
@@ -438,6 +561,9 @@ void aShot::applyDiferencia() {
 
 
 void aShot::prueba() { //pintar negro en diagonal
+    imagenAnt = imagen;
+    addDeshacer();
+
     if (imagen.qimage.format() != 3) { //8-bit indexado, monocromo
         QMessageBox::information(this, tr("Informacion de la imagen"), "no es monocromo indexado");
         return;
@@ -480,6 +606,8 @@ void aShot::prueba() { //pintar negro en diagonal
 
 
 void aShot::ecualizar() { //ecualizacion del histograma: aproximacion de distribucion uniforme, mantiene entropia
+    imagenAnt = imagen;
+    addDeshacer();
 
     int * vout = new int [imagenRect.M()]; //tabla LUT
     for (int vin = 0; vin < imagenRect.M(); vin++) {
@@ -509,94 +637,85 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     //connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(createNewWindow()));
     connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(abrirNew()));
     connect(ui->action_Cerrar, SIGNAL(triggered()), this, SLOT(close()));
-    ui->action_Cerrar->setEnabled(false);
     connect(ui->actionCerrar_todo, SIGNAL(triggered()), this, SLOT(cerrarTodo()));
-    ui->actionCerrar_todo->setEnabled(false);
 
     connect(ui->actionAcerca_de, SIGNAL(triggered()), this, SLOT(acercade()));
     this->ayuda = new Ayuda();
     connect(ui->actionAyuda_de_aShot, SIGNAL(triggered()), this->ayuda, SLOT(show()));
-    ui->menuAjustes->setEnabled(false);
 
     //transformaciones
     connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this, SLOT(showNewBC()));
-    ui->actionBrillo_Contraste->setEnabled(false);
     connect(ui->actionLog_Exp, SIGNAL(triggered()), this, SLOT(showNewLogexp()));
-    ui->actionLog_Exp->setEnabled(false);
     connect(ui->actionTramos, SIGNAL(triggered()), this, SLOT(showNewTramos()));
-    ui->actionTramos->setEnabled(false);
     connect(ui->actionHespecif, SIGNAL(triggered()), this, SLOT(showNewHespecif()));
-    ui->actionHespecif->setEnabled(false);
     connect(ui->actionDigitalizar, SIGNAL(triggered()), this, SLOT(showNewDigit()));
-    ui->actionDigitalizar->setEnabled(false);
     connect(ui->actionDiferencia, SIGNAL(triggered()), this, SLOT(showNewDiferencia()));
-    ui->actionDiferencia->setEnabled(false);
 
     connect(ui->actionAjustar_a_ventana, SIGNAL(triggered()), this, SLOT(fitToWindow()));
-    ui->actionAjustar_a_ventana->setEnabled(false);
     //ui->actionAjustar_a_ventana->setCheckable(true); //ya se pone en el Qt Designer
 
     connect(ui->action_Guardar, SIGNAL(triggered()), this, SLOT(guardar()));
-    ui->action_Guardar->setEnabled(false);
     connect(ui->actionGuardar_como, SIGNAL(triggered()), this, SLOT(guardarComo()));
-    ui->actionGuardar_como->setEnabled(false);
-
     connect(ui->actionIm_primir, SIGNAL(triggered()), this, SLOT(imprimir()));
-    ui->actionIm_primir->setEnabled(false);
 
     connect(ui->actionZoom_In, SIGNAL(triggered()), this, SLOT(zoomIn()));
-    ui->actionZoom_In->setEnabled(false);
-
     connect(ui->actionZoom_Out, SIGNAL(triggered()), this, SLOT(zoomOut()));
-    ui->actionZoom_Out->setEnabled(false);
     connect(ui->actionTama_o_normal, SIGNAL(triggered()), this, SLOT(normalSize()));
-    ui->actionTama_o_normal->setEnabled(false);
 
     connect(ui->action_Informacion_imagen, SIGNAL(triggered()), this, SLOT(info_imagen()));
-    ui->action_Informacion_imagen->setEnabled(false);
 
     connect(ui->actionToGray, SIGNAL(triggered()), this, SLOT(toGray()));
-    ui->actionToGray->setEnabled(false);
-
     connect(ui->actionNegativo, SIGNAL(triggered()), this, SLOT(negativo()));
-    ui->actionNegativo->setEnabled(false);
-
     connect(ui->actionEcualizar, SIGNAL(triggered()), this, SLOT(ecualizar()));
-    ui->actionEcualizar->setEnabled(false);
-
     connect(ui->action_Histograma, SIGNAL(triggered()), this, SLOT(showNewHistograma()));
-    ui->action_Histograma->setEnabled(false);
-
     connect(ui->actionPerfil, SIGNAL(triggered()), this, SLOT(showNewPerfil()));
-    ui->actionPerfil->setEnabled(false);
+
+    connect(ui->actionDeshacer, SIGNAL(triggered()), this, SLOT(deshacer()));
+    connect(ui->actionRehacer, SIGNAL(triggered()), this, SLOT(rehacer()));
+    connect(ui->actionAnterior_imagen, SIGNAL(triggered()), this, SLOT(anteriorImagen()));
+    connect(ui->actionAnterior_histograma, SIGNAL(triggered()), this, SLOT(anteriorHistograma()));
+
+    ui->actionDeshacer->setEnabled(false); //empiezan en false hasta algun cambio en imagen
+    ui->actionRehacer->setEnabled(false);
+    ui->actionAnterior_histograma->setEnabled(false);
+    ui->actionAnterior_imagen->setEnabled(false);
 
     connect(ui->actionPrueba, SIGNAL(triggered()), this, SLOT(prueba())); //prueba: cuidado no se ha hecho el enable false y luego true
 
 }
 
-void aShot::enableActions() {
-    ui->menuAjustes->setEnabled(true);
-    ui->actionBrillo_Contraste->setEnabled(true);
-    ui->actionLog_Exp->setEnabled(true);
-    ui->actionTramos->setEnabled(true);
-    ui->actionHespecif->setEnabled(true);
-    ui->actionDigitalizar->setEnabled(true);
-    ui->actionDiferencia->setEnabled(true);
+void aShot::enableActions(bool b) {
+    ui->menuAjustes->setEnabled(b);
+    ui->actionBrillo_Contraste->setEnabled(b);
+    ui->actionLog_Exp->setEnabled(b);
+    ui->actionTramos->setEnabled(b);
+    ui->actionHespecif->setEnabled(b);
+    ui->actionDigitalizar->setEnabled(b);
+    ui->actionDiferencia->setEnabled(b);
 
-    ui->actionAjustar_a_ventana->setEnabled(true);
-    ui->action_Cerrar->setEnabled(true);
-    ui->actionCerrar_todo->setEnabled(true);
-    ui->action_Guardar->setEnabled(true);
-    ui->actionGuardar_como->setEnabled(true);
-    ui->actionIm_primir->setEnabled(true);
-    ui->action_Informacion_imagen->setEnabled(true);
-    ui->actionNegativo->setEnabled(true);
-    ui->actionEcualizar->setEnabled(true);
-    ui->action_Histograma->setEnabled(true);
-    ui->actionPerfil->setEnabled(true);
+    ui->actionAjustar_a_ventana->setEnabled(b);
+    ui->action_Cerrar->setEnabled(b);
+    ui->actionCerrar_todo->setEnabled(b);
+    ui->action_Guardar->setEnabled(b);
+    ui->actionGuardar_como->setEnabled(b);
+    ui->actionIm_primir->setEnabled(b);
+    ui->action_Informacion_imagen->setEnabled(b);
+    ui->actionNegativo->setEnabled(b);
+    ui->actionEcualizar->setEnabled(b);
+    ui->action_Histograma->setEnabled(b);
+    ui->actionPerfil->setEnabled(b);
 
-    if (imagen.qimage.format() != 3) //si no es en escala de grises se habilita
+    if (b == false) { //solo si es false, a true ya se hace cuando se haga un cambio en imagen
+        ui->actionDeshacer->setEnabled(false);
+        ui->actionRehacer->setEnabled(false);
+        ui->actionAnterior_histograma->setEnabled(false);
+        ui->actionAnterior_imagen->setEnabled(false);
+    }
+
+    if ((b == true) && (imagen.qimage.format() != 3)) //si no es en escala de grises se habilita
         ui->actionToGray->setEnabled(true);
+    else
+        ui->actionToGray->setEnabled(false);
 }
 
 void aShot::updateZoomActions() { //activa o desactiva acciones de zoom segun la accion fitTowindow
