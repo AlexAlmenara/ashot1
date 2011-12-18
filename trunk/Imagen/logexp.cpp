@@ -148,6 +148,7 @@ void Logexp::cambiarImagen() {
 
 void Logexp::aceptar() {
     this->close();
+    emit(acepted());
     delete this;
 }
 

@@ -84,6 +84,11 @@
     <property name="title">
      <string>&amp;Editar</string>
     </property>
+    <addaction name="actionDeshacer"/>
+    <addaction name="actionRehacer"/>
+    <addaction name="separator"/>
+    <addaction name="actionAnterior_imagen"/>
+    <addaction name="actionAnterior_histograma"/>
    </widget>
    <widget class="QMenu" name="menuAyuda">
     <property name="title">
@@ -317,6 +322,32 @@
   <action name="actionDiferencia">
    <property name="text">
     <string>Diferencia</string>
+   </property>
+  </action>
+  <action name="actionDeshacer">
+   <property name="text">
+    <string>Deshacer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionRehacer">
+   <property name="text">
+    <string>Rehacer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="actionAnterior_imagen">
+   <property name="text">
+    <string>Anterior imagen</string>
+   </property>
+  </action>
+  <action name="actionAnterior_histograma">
+   <property name="text">
+    <string>Anterior histograma</string>
    </property>
   </action>
  </widget>

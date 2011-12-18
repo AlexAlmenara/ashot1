@@ -45,6 +45,7 @@ signals:
     void updateSpinBoxC(double);
     //void closed();
     void changed();
+    void acepted();
 
 private slots:
     void intToDoubleB(int value);

@@ -131,6 +131,7 @@ void BrilloContraste::aceptar() {
     //imagenOriginal = new Imagen(imagenAux->fileName()); //no hace falta, porque esto ya se hace desde aShot
     //imagenOriginal = imagenAux;
     this->close();
+    emit(acepted());
     delete this;
     //emit(closed()); //se emite signal
 }

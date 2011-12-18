@@ -43,6 +43,7 @@ public slots:
 
 signals:
     void changed();
+    void acepted();
 };
 
 #endif // DIFERENCIA_H
