@@ -41,7 +41,7 @@ int Diferencia::dif(int x, int y) {
 void Diferencia::updateLabel() {
     //label.hide();
     label.setPixmap(QPixmap::fromImage(imagenEsp.qimage));
-    //label.resize(imagenEsp.width(), imagenEsp.height());
+    //label.resize(imagenEsp.width(), imagenEsp.height()); //se supone que abrimos siempre del tamaño de la imagen de trabajo
     label.move(this->x() + 600, this->y());
     label.show();
 }

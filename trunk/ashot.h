@@ -16,6 +16,10 @@
 #include "Imagen/digitalizar.h"
 #include "Imagen/diferencia.h"
 
+//Practica 2:
+#include "Filtros/runiforme.h"
+
+
 namespace Ui {
     class aShot;
 }
@@ -57,6 +61,10 @@ private:
     bool hasImage;
 
     QPoint p1, p2; //puntos para region de seleccion (QRect rect)
+
+    //Practica 2
+    RUniforme * rUniforme;
+
 
 
 #ifndef QT_NO_PRINTER
@@ -104,6 +112,9 @@ public slots:
     void anteriorHistograma();
     void anteriorImagen();
 
+    void prueba();
+    void ecualizar();
+
     //para sacar widgets
     void showNewBC(); //crea bc y lo muestra
     void applyBC(); //aplica los cambios hechos despues de cerrar el widget BrilloContraste
@@ -121,8 +132,9 @@ public slots:
     void showNewHistograma();
     void showNewPerfil();
 
-    void prueba();
-    void ecualizar();
+    //Practica 2
+    void showNewRUniforme();
+    void applyRUniforme();
 
 
 };
