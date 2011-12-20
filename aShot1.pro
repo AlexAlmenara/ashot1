@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     function.cpp \
     Imagen/hespecif.cpp \
     Imagen/digitalizar.cpp \
-    Imagen/diferencia.cpp
+    Imagen/diferencia.cpp \
+    Filtros/runiforme.cpp
 
 HEADERS  += ashot.h \
     Ayuda/ayuda.h \
@@ -35,7 +36,8 @@ HEADERS  += ashot.h \
     function.h \
     Imagen/hespecif.h \
     Imagen/digitalizar.h \
-    Imagen/diferencia.h
+    Imagen/diferencia.h \
+    Filtros/runiforme.h
 
 FORMS    += ashot.ui \
     Ayuda/ayuda.ui \
@@ -47,10 +49,20 @@ FORMS    += ashot.ui \
     function.ui \
     Imagen/hespecif.ui \
     Imagen/digitalizar.ui \
-    Imagen/diferencia.ui
+    Imagen/diferencia.ui \
+    Filtros/runiforme.ui
 
 RESOURCES += \
     resources/aShotResources.qrc
+
+
+
+
+
+
+
+
+
 
 
 

@@ -682,6 +682,10 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
 
     connect(ui->actionPrueba, SIGNAL(triggered()), this, SLOT(prueba())); //prueba: cuidado no se ha hecho el enable false y luego true
 
+    //Practica 2: filtros y ruido
+    connect(ui->actionRUniforme, SIGNAL(triggered()), this, SLOT(showNewRUniforme()));
+
+
 }
 
 void aShot::enableActions(bool b) {
@@ -716,6 +720,20 @@ void aShot::enableActions(bool b) {
         ui->actionToGray->setEnabled(true);
     else
         ui->actionToGray->setEnabled(false);
+
+    //Practica 2:
+    ui->actionRUniforme->setEnabled(b);
+    ui->actionRGuassiano->setEnabled(b);
+    ui->actionRImpulsivo->setEnabled(b);
+
+    ui->actionFMedia->setEnabled(b);
+    ui->actionFModa->setEnabled(b);
+    ui->actionFMediana->setEnabled(b);
+    ui->actionFK_Vecinos->setEnabled(b);
+    ui->actionFDif_Estadistica->setEnabled(b);
+    ui->actionFGuassiano->setEnabled(b);
+    ui->actionDefinirFiltro->setEnabled(b);
+    ui->actionUsarFiltroDefinido->setEnabled(b);
 }
 
 void aShot::updateZoomActions() { //activa o desactiva acciones de zoom segun la accion fitTowindow
@@ -743,4 +761,19 @@ void aShot::adjustScrollBar(QScrollBar *scrollBar, double factor) {
 }
 
 
+
+//Practica 2:
+void aShot::showNewRUniforme() {
+    rUniforme = new RUniforme(0, imagenRect);
+    imagenAnt = imagen;
+    connect(rUniforme, SIGNAL(changed()), this, SLOT(applyRUniforme()));
+    connect(rUniforme, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    rUniforme->show();
+}
+
+
+void aShot::applyRUniforme() {
+    imagenRect = rUniforme->imagenAux;
+    updateAll();
+}
 

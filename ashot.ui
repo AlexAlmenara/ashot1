@@ -102,6 +102,29 @@
     <property name="title">
      <string>&amp;Filtros</string>
     </property>
+    <widget class="QMenu" name="menuRuidos">
+     <property name="title">
+      <string>Ruidos</string>
+     </property>
+     <addaction name="actionRUniforme"/>
+     <addaction name="actionRImpulsivo"/>
+     <addaction name="actionRGuassiano"/>
+    </widget>
+    <widget class="QMenu" name="menuSuavizado">
+     <property name="title">
+      <string>Suavizado</string>
+     </property>
+     <addaction name="actionFMedia"/>
+     <addaction name="actionFK_Vecinos"/>
+     <addaction name="actionFModa"/>
+     <addaction name="actionFMediana"/>
+     <addaction name="actionFDif_Estadistica"/>
+     <addaction name="actionFGuassiano"/>
+    </widget>
+    <addaction name="menuSuavizado"/>
+    <addaction name="actionDefinirFiltro"/>
+    <addaction name="actionUsarFiltroDefinido"/>
+    <addaction name="menuRuidos"/>
    </widget>
    <widget class="QMenu" name="menu_Imagen">
     <property name="title">
@@ -348,6 +371,61 @@
   <action name="actionAnterior_histograma">
    <property name="text">
     <string>Anterior histograma</string>
+   </property>
+  </action>
+  <action name="actionRUniforme">
+   <property name="text">
+    <string>Uniforme</string>
+   </property>
+  </action>
+  <action name="actionRImpulsivo">
+   <property name="text">
+    <string>Impulsivo (Sal y Pimienta)</string>
+   </property>
+  </action>
+  <action name="actionRGuassiano">
+   <property name="text">
+    <string>Guassiano</string>
+   </property>
+  </action>
+  <action name="actionDefinirFiltro">
+   <property name="text">
+    <string>Definir...</string>
+   </property>
+  </action>
+  <action name="actionUsarFiltroDefinido">
+   <property name="text">
+    <string>Usar definido</string>
+   </property>
+  </action>
+  <action name="actionFMedia">
+   <property name="text">
+    <string>Media</string>
+   </property>
+  </action>
+  <action name="actionFK_Vecinos">
+   <property name="text">
+    <string>K-Vecinos</string>
+   </property>
+  </action>
+  <action name="actionFModa">
+   <property name="text">
+    <string>Moda</string>
+   </property>
+  </action>
+  <action name="actionFMediana">
+   <property name="text">
+    <string>Mediana</string>
+   </property>
+  </action>
+  <action name="actionFDif_Estadistica">
+   <property name="text">
+    <string>Diferencia estadística</string>
+   </property>
+  </action>
+  <action name="actionFGuassiano">
+   <property name="text">
+    <string>Guassiano</string>
    </property>
   </action>
  </widget>
