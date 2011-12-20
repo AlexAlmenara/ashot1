@@ -1,9 +1,9 @@
-#include "runiforme.h"
-#include "ui_runiforme.h"
+#include "rimpulsivo.h"
+#include "ui_rimpulsivo.h"
 
-RUniforme::RUniforme(QWidget *parent, Imagen image) :
+RImpulsivo::RImpulsivo(QWidget *parent, Imagen image) :
     QWidget(parent),
-    ui(new Ui::RUniforme)
+    ui(new Ui::RImpulsivo)
 {
     ui->setupUi(this);
 
@@ -12,32 +12,25 @@ RUniforme::RUniforme(QWidget *parent, Imagen image) :
     connect(ui->ButtonCancelar, SIGNAL(clicked()), this, SLOT(cancelar()));
     connect(ui->ButtonAceptar, SIGNAL(clicked()), this, SLOT(aceptar()));
 
-    //cambios de spinbox cambian imagen directamente
-    connect(ui->doubleSpinBoxP, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
-    connect(ui->spinBoxN1, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
-    connect(ui->spinBoxN2, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
+    connect(ui->doubleSpinBoxP, SIGNAL(editingFinished()), this, SLOT(cambiarImagen())); //cambios de spinbox cambian imagen directamente
 
     connect(ui->checkBoxHistR, SIGNAL(pressed()), this, SLOT(verHistRuido()));
     connect(ui->checkBoxImagenR, SIGNAL(pressed()), this, SLOT(verImagenRuido()));
 
-
-    connect(ui->spinBoxN1, SIGNAL(editingFinished()), this, SLOT(comprobarRango()));
-    connect(ui->spinBoxN2, SIGNAL(editingFinished()), this, SLOT(comprobarRango()));
     //cambiarImagen(); //por defecto ya se ve un ruido hecho
     //emit(changed());
-
 }
 
-
-RUniforme::~RUniforme() {
+RImpulsivo::~RImpulsivo()
+{
     delete ui;
 }
 
 
-
-void RUniforme::setValues(Imagen image) {
+void RImpulsivo::setValues(Imagen image) {
     imagenOriginal = image;
     imagenAux = image;
+    NO_RUIDO = 100;
     imagenRuidoCreada = false;
     matRuido = new int * [imagenOriginal.width()]; //creacion de matriz de ruido. fuente: http://c.conclase.net/curso/?cap=017
     for (int i = 0; i < imagenOriginal.width(); i++)
@@ -45,50 +38,28 @@ void RUniforme::setValues(Imagen image) {
 
     ui->doubleSpinBoxP->setRange(0.0, 100.0); //porcentaje de contaminacion
     ui->doubleSpinBoxP->setValue(10.0);
-
-    ui->spinBoxN1->setRange(-(imagenOriginal.M() - 1), imagenOriginal.M() - 2); //-255..254
-    ui->spinBoxN1->setValue(-50);
-    ui->spinBoxN2->setRange(-(imagenOriginal.M() - 2), imagenOriginal.M() - 1); //-254..255
-    ui->spinBoxN2->setValue(50);
 }
 
 
-void RUniforme::comprobarRango() {
-    if (ui->spinBoxN1->value() >= ui->spinBoxN2->value())
-        ui->spinBoxN1->setValue(-(imagenOriginal.M() - 1)); //se pone el minimo valor
-}
 
-void RUniforme::cambiarImagen() {
+void RImpulsivo::cambiarImagen() {
     //inicializar valores
     imagenAux =  imagenOriginal;
     srand(time(NULL)); //reinicia semilla aleatoria
 
     double p = ui->doubleSpinBoxP->value(); //porcentaje de contaminacion
     int N = (int) ((p / 100.0) * (double) imagenOriginal.size()); //numero de pixeles ruidosos a generar
-    int n1 = ui->spinBoxN1->value(); //rango [n1, n2]
-    int n2 = ui->spinBoxN2->value();
+    F = (int) (((double) N / 2.0) + 0.5); //frecuencia absoluta para cada valor del intervalo (redondeado al int mas cercano)
 
-
-
-    Mnew = n2 - n1 + 1; //if ((n1 > 0) && (n2 > 0))
-    /*if ((n1 < 0) && (n2 > 0))
-        Mnew = abs(n2 - n1 - 1);
-    else
-        if ((n1 < 0) && (n2 < 0))
-            Mnew = abs(n2 + n1 - 1);*/
-
-    F = (int) (((double) N / (double) Mnew) + 0.5); //frecuencia absoluta para cada valor del intervalo (redondeado al int mas cercano)
-
-    NO_RUIDO = n1 - 1;
     //inicializar matriz ruido
-    //matRuido = new int [imagenOriginal.width()][imagenOriginal.height()]; //QGenericMatrix<W, H, int> matRuido;
     for (int i = 0; i < imagenOriginal.width(); i++)
         for (int j = 0; j < imagenOriginal.height(); j++)
             matRuido[i][j] = NO_RUIDO; //valor de NO RUIDO
 
     //poner ruido en casillas aleatorias de matriz ruido
     int x, y;
-    for (int vin = n1; vin <= n2; vin++) //recorre el rango de valores aleatorios
+    int valor = -255; //primera iteracion
+    for (int i = 0; i < 2; i++) { //repite dos veces
         for (int j = 0; j < F; j++) { //F veces por nivel
             do { //encontrar una casilla aleatoria aun sin ruido
                 x = rand() % (imagenOriginal.width() - 1); //0..width-1
@@ -96,12 +67,14 @@ void RUniforme::cambiarImagen() {
             }
             while (matRuido[x][y] != NO_RUIDO); //con el do..while, obliga a que se ejecuta al menos una vez (como el repeat)
 
-            matRuido[x][y] = vin; //en posicion aleatoria se asigna este valor
-        }
+            matRuido[x][y] = valor; //en posicion aleatoria se asigna este valor
+        } //for F
+
+        valor = 255; //pasa ahora a segunda iteracion
+    } //for 1, 2
 
 
     //añadir ruido a imagen
-    int valor;
     for (int i = 0; i < imagenAux.width(); i++) //es lo mismo que con imagenOriginal
         for (int j = 0; j < imagenAux.height(); j++) {
             if (matRuido[i][j] != NO_RUIDO) {
@@ -111,8 +84,6 @@ void RUniforme::cambiarImagen() {
                 else
                     if (valor < 0)
                         valor = 0;
-
-                //printf(", valor: %d", valor);
                 imagenAux.qimage.setPixel(i, j, valor);
             }
          }
@@ -125,25 +96,19 @@ void RUniforme::cambiarImagen() {
 
 
 
-void RUniforme::crearImagenRuido() { //crea a partir de matriz de ruido. solo sirve para slots verImagenRuido y verHistRuido
-    int valor;
-    int n1 = ui->spinBoxN1->value(); //no hace falta n2
-
-    //el rango de la imagenR sera 0..254, porque el 255 lo reservamos para valor NO_RUIDO
-    double dist = ((double) (imagenOriginal.M() - 2) / (double) (Mnew - 1));
+void RImpulsivo::crearImagenRuido() { //crea a partir de matriz de ruido. solo sirve para slots verImagenRuido y verHistRuido
     imagenR = imagenOriginal; //solo para las dimensiones
 
-    imagenR.qimage.setColor(imagenR.M() - 1, qRgb(0, 0, 255)); //el 255 lo reservamos para NO_RUIDO: color azul
+    int valor;
+    printf("noruido: %d", NO_RUIDO);
+    imagenR.qimage.setColor(NO_RUIDO, qRgb(0, 0, 255));  //el 100 lo reservamos para NO_RUIDO: color azul
     for (int i = 0; i < imagenR.width(); i++) //es lo mismo que con imagenOriginal
-        for (int j = 0; j < imagenR.height(); j++) {
-            if (matRuido[i][j] == NO_RUIDO)
-                valor = imagenR.M() - 1; //el 255 lo reservamos para NO_RUIDO
-            else {
-                valor = matRuido[i][j];
-                if (n1 != 0) valor -= n1; //pasamos rango [n1, n2] a [0, n2-n1]
-                valor = (int) (valor * dist + 0.5); //pasamos rango a [0..254]
-            }
-
+        for (int j = 0; j < imagenR.height(); j++) {  
+            valor = matRuido[i][j];
+            if (valor == -255)
+                valor = 0;
+            //if valor = 255: es 255
+            //if valor == NO_RUIDO: es NO_RUIDO = 100
             imagenR.qimage.setPixel(i, j, valor);
         }
 
@@ -151,14 +116,14 @@ void RUniforme::crearImagenRuido() { //crea a partir de matriz de ruido. solo si
 }
 
 
-void RUniforme::aceptar() {
+void RImpulsivo::aceptar() {
     this->close();
     emit(acepted());
     delete this;
 }
 
 
-void RUniforme::cancelar() {
+void RImpulsivo::cancelar() {
     imagenAux = imagenOriginal; //new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
     close();
     emit(changed());
@@ -166,21 +131,21 @@ void RUniforme::cancelar() {
 }
 
 
-void RUniforme::verHistRuido() {
+void RImpulsivo::verHistRuido() {
     if (!imagenRuidoCreada) {
         crearImagenRuido();
         imagenRuidoCreada = true;
     }
 
       //if (imagenR.max_vin() == imagenR.M() - 1) //si hay mucho NO_RUIDO, bajamos la escala en el eje y
-    Histograma * histograma = new Histograma(0, imagenR, F + 40); //cambiamos el rango de grises: 0..254, xq el 255 lo reservamos para NO_RUIDO
+    Histograma *   histograma = new Histograma(0, imagenR); //cambiamos el rango de grises: 0..254, xq el 255 lo reservamos para NO_RUIDO
 
     histograma->show();
     histograma->move(1100, 500);
 }
 
 
-void RUniforme::verImagenRuido() {
+void RImpulsivo::verImagenRuido() {
     if (!imagenRuidoCreada) {
         crearImagenRuido();
         imagenRuidoCreada = true;
@@ -190,4 +155,3 @@ void RUniforme::verImagenRuido() {
     labelRuido.move(this->x() + 600, this->y());
     labelRuido.show();
 }
-

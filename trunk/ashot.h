@@ -18,6 +18,8 @@
 
 //Practica 2:
 #include "Filtros/runiforme.h"
+#include "Filtros/rimpulsivo.h"
+#include "Filtros/rgaussiano.h"
 
 
 namespace Ui {
@@ -64,6 +66,8 @@ private:
 
     //Practica 2
     RUniforme * rUniforme;
+    RImpulsivo * rImpulsivo;
+    RGaussiano * rGaussiano;
 
 
 
@@ -135,8 +139,10 @@ public slots:
     //Practica 2
     void showNewRUniforme();
     void applyRUniforme();
-
-
+    void showNewRImpulsivo();
+    void applyRImpulsivo();
+    void showNewRGaussiano();
+    void applyRGaussiano();
 };
 
 #endif // ASHOT_H

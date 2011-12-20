@@ -291,9 +291,9 @@ QImage Imagen::qImage() {
 }*/
 
 
-int Imagen::gray(int i) {
-    return qGray(qimage.color(i));
-}
+/*int Imagen::gray(int i) {
+    return qGray(qimage.color(i)); //CUIDADO: esto es el indice de la tabla!!
+}*/
 
 int Imagen::gray(int x, int y) {
     return qGray(qimage.pixel(x, y));
