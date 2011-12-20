@@ -1,5 +1,5 @@
-#ifndef RUNIFORME_H
-#define RUNIFORME_H
+#ifndef RIMPULSIVO_H
+#define RIMPULSIVO_H
 
 #include <QWidget>
 #include "imagen.h"
@@ -9,32 +9,33 @@
 #include <stdlib.h>
 #include <time.h>
 
+
+
+
 namespace Ui {
-    class RUniforme;
+    class RImpulsivo;
 }
 
-class RUniforme : public QWidget
+class RImpulsivo : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit RUniforme(QWidget *parent = 0, Imagen image = Imagen());
-    ~RUniforme();
+    explicit RImpulsivo(QWidget *parent = 0, Imagen image = Imagen());
+    ~RImpulsivo();
 
     Imagen imagenAux; //imagen resultado de sumar el ruido a la imagen
 
 private:
-    Ui::RUniforme *ui;
-
+    Ui::RImpulsivo *ui;
 
     Imagen imagenR; //imagen ruido
     Imagen imagenOriginal;
     QLabel labelRuido; //label donde se vera la imagen ruido de forma sencilla
 
+    int NO_RUIDO;
     int ** matRuido; //matriz que representa la imagen ruido
-    int Mnew; //el numero de valores diferentes para ruido
     bool imagenRuidoCreada;
-    int NO_RUIDO; //"constante" = n1 - 1
     int F; //frecuencia absoluta de cada valor en posicion aleatoria
 
     void setValues(Imagen image);
@@ -47,12 +48,10 @@ public slots:
 
     void verImagenRuido(); //muestra imagen ruido
     void verHistRuido(); //muestra histograma de imagen ruido
-    void comprobarRango();
 
 signals:
     void changed();
     void acepted();
-
 };
 
-#endif // RUIDOUNIFORME_H
+#endif // RIMPULSIVO_H

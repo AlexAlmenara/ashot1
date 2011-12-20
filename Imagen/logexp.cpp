@@ -1,5 +1,6 @@
 #include "logexp.h"
 #include "ui_logexp.h"
+
 #include "math.h"
 
 Logexp::Logexp(QWidget *parent, Imagen imagen) :

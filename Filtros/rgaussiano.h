@@ -1,30 +1,30 @@
-#ifndef RUNIFORME_H
-#define RUNIFORME_H
+#ifndef RGAUSSIANO_H
+#define RGAUSSIANO_H
 
 #include <QWidget>
 #include "imagen.h"
 #include "Imagen/histograma.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+
+#define PI 3.14159
+//#define E 2,71828
 
 namespace Ui {
-    class RUniforme;
+    class RGaussiano;
 }
 
-class RUniforme : public QWidget
+class RGaussiano : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit RUniforme(QWidget *parent = 0, Imagen image = Imagen());
-    ~RUniforme();
+    explicit RGaussiano(QWidget *parent = 0, Imagen image = Imagen());
+    ~RGaussiano();
 
     Imagen imagenAux; //imagen resultado de sumar el ruido a la imagen
 
 private:
-    Ui::RUniforme *ui;
+    Ui::RGaussiano *ui;
 
 
     Imagen imagenR; //imagen ruido
@@ -35,10 +35,14 @@ private:
     int Mnew; //el numero de valores diferentes para ruido
     bool imagenRuidoCreada;
     int NO_RUIDO; //"constante" = n1 - 1
-    int F; //frecuencia absoluta de cada valor en posicion aleatoria
+    int N; //numero de pixeles ruidosos
+    double S; //suma de los valores de fGauss desde n1 a n2
 
     void setValues(Imagen image);
     void crearImagenRuido(); //crea a partir de matriz de ruido. solo sirve para slots verImagenRuido y verHistRuido
+
+    double fGauss(double x); //funcion de gauss (los parametros media y desv tipica ya los coge dentro)
+    int F(int x); //frecuencia absoluta del valor de ruido x
 
 public slots:
     void cambiarImagen();
@@ -52,7 +56,6 @@ public slots:
 signals:
     void changed();
     void acepted();
-
 };
 
-#endif // RUIDOUNIFORME_H
+#endif // RGAUSSIANO_H

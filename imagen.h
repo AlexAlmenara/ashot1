@@ -60,8 +60,8 @@ public:
 
     void pegarImagen(Imagen image, QPoint p1); //pega image desde punto p1. donde se salga, por supuesto no hace nada. // QPoint p2 = QPoint(-1, -1));
 
-    int gray(int i); //devuelve nivel de gris de posicion dada
-    int gray(int x, int y);
+    //int gray(int i);
+    int gray(int x, int y); //devuelve nivel de gris de posicion dada
 
     int perfil(int i);  //funcion perfil (diagonal)
     int dperfil(int i); //derivada de la funcion perfil

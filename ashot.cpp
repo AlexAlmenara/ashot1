@@ -467,7 +467,7 @@ void aShot::showNewBC() { //crea bc y lo muestra
     bc = new BrilloContraste(0, imagenRect);
     imagenAnt = imagen;
     //this->bc = new BrilloContraste(this); //esto se hara una vez abierta la imagen
-    //connect(ui->actionBrillo_Contraste, SIGNAL(triggered()), this->bc, SLOT(show()));
+    //connect(ui->actionBrillo_Contraste, SIGNAL(triggImpulsivoered()), this->bc, SLOT(show()));
     connect(bc, SIGNAL(changed()), this, SLOT(applyBC()));
     connect(bc, SIGNAL(acepted()), this, SLOT(addDeshacer()));
     bc->show();
@@ -684,8 +684,8 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
 
     //Practica 2: filtros y ruido
     connect(ui->actionRUniforme, SIGNAL(triggered()), this, SLOT(showNewRUniforme()));
-
-
+    connect(ui->actionRImpulsivo, SIGNAL(triggered()), this, SLOT(showNewRImpulsivo()));
+    connect(ui->actionRGuassiano, SIGNAL(triggered()), this, SLOT(showNewRGaussiano()));
 }
 
 void aShot::enableActions(bool b) {
@@ -774,6 +774,36 @@ void aShot::showNewRUniforme() {
 
 void aShot::applyRUniforme() {
     imagenRect = rUniforme->imagenAux;
+    updateAll();
+}
+
+
+void aShot::showNewRImpulsivo() {
+    rImpulsivo = new RImpulsivo(0, imagenRect);
+    imagenAnt = imagen;
+    connect(rImpulsivo, SIGNAL(changed()), this, SLOT(applyRImpulsivo()));
+    connect(rImpulsivo, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    rImpulsivo->show();
+}
+
+
+void aShot::applyRImpulsivo() {
+    imagenRect = rImpulsivo->imagenAux;
+    updateAll();
+}
+
+
+void aShot::showNewRGaussiano() {
+    rGaussiano = new RGaussiano(0, imagenRect);
+    imagenAnt = imagen;
+    connect(rGaussiano, SIGNAL(changed()), this, SLOT(applyRGaussiano()));
+    connect(rGaussiano, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    rGaussiano->show();
+}
+
+
+void aShot::applyRGaussiano() {
+    imagenRect = rGaussiano->imagenAux;
     updateAll();
 }
 

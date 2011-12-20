@@ -91,7 +91,11 @@ void Diferencia::abrir() { //reinicia, abre otra imagen y ejecuta la conversion
 
 
 void Diferencia::histResult() { //histograma de la imagen diferencia
-    Histograma * histograma = new Histograma(0, imagenAux);
+    Histograma * histograma;
+    if (imagenAux.max_vin() == 0) //casi todo lo restado da 0: bajar escala en eje y
+        histograma = new Histograma(0, imagenAux, (double) imagenAux.maxh() / 10.0);
+    else
+        histograma = new Histograma(0, imagenAux);
     histograma->show();
     histograma->move(600, 500);
 }
@@ -115,10 +119,14 @@ void Diferencia::i1_cambios() {
     if (max > imagenAux.M() - 1) max = imagenAux.M() - 1;
     //printf("\nrango: [%d, %d]", min, max);
 
+    int CAMBIO = 255; //valor que usaremos para dibujar con color verde
+    if (min > 0) CAMBIO = 0; //if (max < 255) CAMBIO = 255;
+    i1.qimage.setColor(CAMBIO, qRgb(0, 255, 0));
+
     for (int i = 0; i < i1.width(); i++)
         for (int j = 0; j < i1.height(); j++)
             if ((i1.gray(i, j) >= min) && (i1.gray(i, j) <= max)) //si este nivel de gris esta EN el rango no se marca (se pone un valor 0)
-                i1.qimage.setPixel(i, j, 255); //los que estan dentro se pone 0, los que estan fuera (los de cambio) se dejan igual para mostrarlos
+                i1.qimage.setPixel(i, j, CAMBIO); //los que estan dentro se pone 0, los que estan fuera (los de cambio) se dejan igual para mostrarlos
         i1.update();
 
     label1.setPixmap(QPixmap::fromImage(i1.qimage));
@@ -135,6 +143,10 @@ void Diferencia::i2_cambios() {
 
     if (min < 0) min = 0;
     if (max > imagenAux.M() - 1) max = imagenAux.M() - 1;
+
+    int CAMBIO = 255; //valor que usaremos para dibujar con color verde
+    if (min > 0) CAMBIO = 0; //if (max < 255) CAMBIO = 255;
+    i2.qimage.setColor(CAMBIO, qRgb(0, 255, 0));
 
     for (int i = 0; i < i2.width(); i++)
         for (int j = 0; j < i2.height(); j++)

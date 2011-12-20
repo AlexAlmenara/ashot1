@@ -1,9 +1,14 @@
-#include "runiforme.h"
-#include "ui_runiforme.h"
+#include "rgaussiano.h"
+#include "ui_rgaussiano.h"
 
-RUniforme::RUniforme(QWidget *parent, Imagen image) :
+#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+RGaussiano::RGaussiano(QWidget *parent, Imagen image) :
     QWidget(parent),
-    ui(new Ui::RUniforme)
+    ui(new Ui::RGaussiano)
 {
     ui->setupUi(this);
 
@@ -16,6 +21,8 @@ RUniforme::RUniforme(QWidget *parent, Imagen image) :
     connect(ui->doubleSpinBoxP, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
     connect(ui->spinBoxN1, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
     connect(ui->spinBoxN2, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
+    connect(ui->doubleSpinBoxMedia, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
+    connect(ui->doubleSpinBoxDesv, SIGNAL(editingFinished()), this, SLOT(cambiarImagen()));
 
     connect(ui->checkBoxHistR, SIGNAL(pressed()), this, SLOT(verHistRuido()));
     connect(ui->checkBoxImagenR, SIGNAL(pressed()), this, SLOT(verImagenRuido()));
@@ -25,17 +32,15 @@ RUniforme::RUniforme(QWidget *parent, Imagen image) :
     connect(ui->spinBoxN2, SIGNAL(editingFinished()), this, SLOT(comprobarRango()));
     //cambiarImagen(); //por defecto ya se ve un ruido hecho
     //emit(changed());
-
 }
 
-
-RUniforme::~RUniforme() {
+RGaussiano::~RGaussiano()
+{
     delete ui;
 }
 
 
-
-void RUniforme::setValues(Imagen image) {
+void RGaussiano::setValues(Imagen image) {
     imagenOriginal = image;
     imagenAux = image;
     imagenRuidoCreada = false;
@@ -50,34 +55,50 @@ void RUniforme::setValues(Imagen image) {
     ui->spinBoxN1->setValue(-50);
     ui->spinBoxN2->setRange(-(imagenOriginal.M() - 2), imagenOriginal.M() - 1); //-254..255
     ui->spinBoxN2->setValue(50);
+
+    ui->doubleSpinBoxMedia->setRange(-(double) (imagenOriginal.M() - 1), (double) (imagenOriginal.M() - 1));
+    ui->doubleSpinBoxMedia->setValue(20);
+    ui->doubleSpinBoxDesv->setRange(0.0, ((double) imagenOriginal.M() / 2.0));
+    ui->doubleSpinBoxDesv->setValue(5);
 }
 
 
-void RUniforme::comprobarRango() {
+void RGaussiano::comprobarRango() {
     if (ui->spinBoxN1->value() >= ui->spinBoxN2->value())
         ui->spinBoxN1->setValue(-(imagenOriginal.M() - 1)); //se pone el minimo valor
 }
 
-void RUniforme::cambiarImagen() {
+
+double RGaussiano::fGauss(double x) { //funcion de gauss (los parametros media y desv tipica ya los coge dentro)
+    double valor = x - ui->doubleSpinBoxMedia->value();
+    valor = pow(valor, 2) / (2.0 * pow(ui->doubleSpinBoxDesv->value(), 2));
+    valor = exp(-valor);     //exp(x) = e^x
+    valor *= 1.0 / (ui->doubleSpinBoxDesv->value() * sqrt(2.0 * PI));
+    return valor;
+}
+
+
+int RGaussiano::F(int x) { //frecuencia absoluta del valor de ruido x
+    return (int) ((fGauss(x) * (((double) N) / S)) + 0.5);
+}
+
+
+void RGaussiano::cambiarImagen() {
     //inicializar valores
     imagenAux =  imagenOriginal;
     srand(time(NULL)); //reinicia semilla aleatoria
 
     double p = ui->doubleSpinBoxP->value(); //porcentaje de contaminacion
-    int N = (int) ((p / 100.0) * (double) imagenOriginal.size()); //numero de pixeles ruidosos a generar
+    N = (int) ((p / 100.0) * (double) imagenOriginal.size()); //numero de pixeles ruidosos a generar
     int n1 = ui->spinBoxN1->value(); //rango [n1, n2]
     int n2 = ui->spinBoxN2->value();
+    Mnew = n2 - n1 + 1;
 
+    //determinar S
+    S = 0;
+    for (int vin = n1; vin <= n2; vin++) //recorre el rango de valores aleatorios
+        S += fGauss(vin);
 
-
-    Mnew = n2 - n1 + 1; //if ((n1 > 0) && (n2 > 0))
-    /*if ((n1 < 0) && (n2 > 0))
-        Mnew = abs(n2 - n1 - 1);
-    else
-        if ((n1 < 0) && (n2 < 0))
-            Mnew = abs(n2 + n1 - 1);*/
-
-    F = (int) (((double) N / (double) Mnew) + 0.5); //frecuencia absoluta para cada valor del intervalo (redondeado al int mas cercano)
 
     NO_RUIDO = n1 - 1;
     //inicializar matriz ruido
@@ -89,7 +110,7 @@ void RUniforme::cambiarImagen() {
     //poner ruido en casillas aleatorias de matriz ruido
     int x, y;
     for (int vin = n1; vin <= n2; vin++) //recorre el rango de valores aleatorios
-        for (int j = 0; j < F; j++) { //F veces por nivel
+        for (int j = 0; j < F(vin); j++) { //F veces por nivel
             do { //encontrar una casilla aleatoria aun sin ruido
                 x = rand() % (imagenOriginal.width() - 1); //0..width-1
                 y = rand() % (imagenOriginal.height() - 1); //0..width-1
@@ -125,7 +146,7 @@ void RUniforme::cambiarImagen() {
 
 
 
-void RUniforme::crearImagenRuido() { //crea a partir de matriz de ruido. solo sirve para slots verImagenRuido y verHistRuido
+void RGaussiano::crearImagenRuido() { //crea a partir de matriz de ruido. solo sirve para slots verImagenRuido y verHistRuido
     int valor;
     int n1 = ui->spinBoxN1->value(); //no hace falta n2
 
@@ -151,14 +172,14 @@ void RUniforme::crearImagenRuido() { //crea a partir de matriz de ruido. solo si
 }
 
 
-void RUniforme::aceptar() {
+void RGaussiano::aceptar() {
     this->close();
     emit(acepted());
     delete this;
 }
 
 
-void RUniforme::cancelar() {
+void RGaussiano::cancelar() {
     imagenAux = imagenOriginal; //new Imagen(imagenOriginal->fileName()); //se mantiene una COPIA DE LA IMAGEN, cuidado NO COPIA DE PUNTERO.
     close();
     emit(changed());
@@ -166,21 +187,27 @@ void RUniforme::cancelar() {
 }
 
 
-void RUniforme::verHistRuido() {
+void RGaussiano::verHistRuido() {
     if (!imagenRuidoCreada) {
         crearImagenRuido();
         imagenRuidoCreada = true;
     }
 
-      //if (imagenR.max_vin() == imagenR.M() - 1) //si hay mucho NO_RUIDO, bajamos la escala en el eje y
-    Histograma * histograma = new Histograma(0, imagenR, F + 40); //cambiamos el rango de grises: 0..254, xq el 255 lo reservamos para NO_RUIDO
+    int n1 = ui->spinBoxN1->value(); //no hace falta n2
+    double dist = ((double) (imagenOriginal.M() - 2) / (double) (Mnew - 1));
+    double media = ui->doubleSpinBoxMedia->value();
+    if (n1 != 0) media -= n1; //pasamos rango [n1, n2] a [0, n2-n1]
+    media = (int) (media * dist + 0.5); //pasamos rango a [0..254]
+
+    int hmedia = imagenR.hAbs(media);
+    Histograma * histograma = new Histograma(0, imagenR, hmedia + 40); //cambiamos el rango de grises: 0..254, xq el 255 lo reservamos para NO_RUIDO
 
     histograma->show();
     histograma->move(1100, 500);
 }
 
 
-void RUniforme::verImagenRuido() {
+void RGaussiano::verImagenRuido() {
     if (!imagenRuidoCreada) {
         crearImagenRuido();
         imagenRuidoCreada = true;

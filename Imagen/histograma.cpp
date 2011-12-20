@@ -1,7 +1,7 @@
 #include "histograma.h"
 #include "ui_histograma.h"
 
-Histograma::Histograma(QWidget *parent, Imagen image) :
+Histograma::Histograma(QWidget *parent, Imagen image, int hmax) : //int xmin, int xmax, int hmin, int hmax) :
     QWidget(parent),
     ui(new Ui::Histograma)
 {
@@ -9,6 +9,12 @@ Histograma::Histograma(QWidget *parent, Imagen image) :
 
 
     this->imagen = image;
+
+    if (hmax != -1)
+        this->hmax = hmax;
+    else
+        this->hmax = imagen.maxh();
+
     setWindowTitle("Histograma de " + imagen.fileName());
 
     connect(ui->radioButtonAbs, SIGNAL(clicked()), this, SLOT(histAbs()));
@@ -57,7 +63,7 @@ void Histograma::newFunction(double ymax) {
         //ui->formLayout->removeWidget(function);
         //ui->gridLayout->removeWidget(function);
 
-    function = new Function(this, hist, 0, imagen.M() - 1, 0, ymax); //por defecto histograma absoluto
+    function = new Function(this, hist, 0.0, imagen.M() - 1, 0.0, ymax); //por defecto histograma absoluto
     function->resize(400, 200);
     function->show();
 
@@ -72,24 +78,24 @@ void Histograma::newFunction(double ymax) {
 
 
 void Histograma::histAbs() {
-    hist = QVector<double>(imagen.M());
+    hist = QVector<double>(imagen.M()); //xmax - xmin
     for (int vin = 0; vin < imagen.M(); vin++)
         hist.insert(vin, imagen.hAbs(vin));
 
-    newFunction(imagen.maxh());
+    newFunction(hmax); //por defecto imagen.maxh()
 }
 
 void Histograma::histRel() {
-    hist = QVector<double>(imagen.M());
+    hist = QVector<double>(imagen.M()); //xmax - xmin
     for (int vin = 0; vin < imagen.M(); vin++)
         hist.insert(vin, imagen.hRel(vin));
 
-    newFunction((double)imagen.maxh() / (double) imagen.size());
+    newFunction((double) hmax / (double) imagen.size());
 }
 
 
 void Histograma::histAcum() {
-    hist = QVector<double>(imagen.M());
+    hist = QVector<double>(imagen.M()); //xmax - xmin
     for (int vin = 0; vin < imagen.M(); vin++)
         hist.insert(vin, imagen.hAcum(vin));
 
@@ -98,7 +104,7 @@ void Histograma::histAcum() {
 
 
 void Histograma::histAcumNorm() {
-    hist = QVector<double>(imagen.M());
+    hist = QVector<double>(imagen.M()); //xmax - xmin
     for (int vin = 0; vin < imagen.M(); vin++)
         hist.insert(vin, imagen.hAcumNorm(vin));
 
