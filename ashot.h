@@ -25,6 +25,9 @@
 //filtros
 #include "Filtros/fmedia.h"
 #include "Filtros/fmoda.h"
+#include "Filtros/fmediana.h"
+#include "Filtros/fdifest.h"
+#include "Filtros/fvecinos.h"
 
 
 namespace Ui {
@@ -78,6 +81,9 @@ private:
     //filtros
     FMedia * fMedia;
     FModa * fModa;
+    FMediana * fMediana;
+    FDifest * fDifest;
+    FVecinos * fVecinos;
 
 
 
@@ -160,6 +166,12 @@ public slots:
     void applyFMedia();
     void showNewFModa();
     void applyFModa();
+    void showNewFMediana();
+    void applyFMediana();
+    void showNewFDifest();
+    void applyFDifest();
+    void showNewFVecinos();
+    void applyFVecinos();
 };
 
 #endif // ASHOT_H
