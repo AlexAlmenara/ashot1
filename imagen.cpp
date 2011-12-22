@@ -1,7 +1,8 @@
 #include "imagen.h"
 //#include <stdio.h>
 #include <math.h>
-#include <iostream>
+//#include <iostream>
+#include <QList>
 
 using namespace std;
 
@@ -174,7 +175,7 @@ int Imagen::maxh() {
 }
 
 
-int Imagen::max_vin() {
+int Imagen::moda() {
     int maximo = hist[0];
     int vin = 0;
     for (int i = 0; i < M(); i++)
@@ -185,6 +186,20 @@ int Imagen::max_vin() {
 
     return vin;
 }
+
+
+
+double Imagen::mediana() {
+    int suma = 0;
+    int i;
+    for (i = 0; i < M(); i++) {
+        suma += hist[i];
+        if (suma > (this->size() / 2)) //ya paso de la mitad
+            return i - 1;
+    }
+    return (double) i; //para asegurar que retorne, aunque no tendria xq que pasar por aqui
+}
+
 
 
 int Imagen::maxRango() {
@@ -208,23 +223,20 @@ double Imagen::brillo() { //media de valores
     for (int i = 0; i < M(); i++)
         bri += i * hist[i];
 
-    bri = bri/this->size();
+    bri = bri/ (double) this->size();
     return bri;
 }
 
 double Imagen::contraste() {
     if (err) return 0.0;
 
+    double bri = brillo();
     double contr = 0.0;
     for (int i = 0; i < M(); i++)
-        contr += pow(i - brillo(), 2) * hist[i];
+        contr += pow(i - bri, 2) * hist[i];
 
-    //cout << "contr: " << contr << endl;
-
-    contr *= 1.0/ (double) size();
-    //cout << "contr: " << contr << endl;
+    contr /= (double) size();
     contr = sqrt(contr);
-    //cout << "contr: " << contr << endl;
     return contr;
 }
 
@@ -297,6 +309,19 @@ QImage Imagen::qImage() {
 
 int Imagen::gray(int x, int y) {
     return qGray(qimage.pixel(x, y));
+}
+
+
+QPoint Imagen::posPerfil(int i) {
+    if (width() == height()) //imagen cuadrada
+        return QPoint(i, i);
+
+    if (width() > height()) //ancho mayor
+        return QPoint(i, (int) ((double) i / dist_diag));
+
+    //else: mayor alto
+    return QPoint((int) ((double) i / dist_diag), i);
+
 }
 
 
@@ -378,4 +403,80 @@ bool Imagen::isNull() {
         return true;
     else
         return false;
+}
+
+
+
+
+
+//pract2: renombramiento de funciones anteriores pero para una region
+double Imagen::brillo(int x1, int y1, int x2, int y2) {
+    int suma = 0;
+    for (int i = x1; i <= x2; i++)
+        for (int j = y1; j <= y2; j++)
+            suma += this->gray(i, j);
+
+    int N = (x2 - x1) * (y2 - y1); //numero de pixeles de la region
+    return (double) suma / (double) N;
+}
+
+
+double Imagen::contraste(int x1, int y1, int x2, int y2) {
+    int bri = this->brillo(x1, y1, x2, y2);
+    double suma = 0.0;
+    for (int i = x1; i <= x2; i++)
+        for (int j = y1; j <= y2; j++)
+            suma += pow((gray(i, j) - bri), 2);
+
+    int N = (x2 - x1) * (y2 - y1); //numero de pixeles de la region
+    return sqrt((double) suma / (double) N);
+
+}
+
+
+double Imagen::mediana(int x1, int y1, int x2, int y2) {
+    int N = (x2 - x1) * (y2 - y1); //numero de pixeles de la region
+
+    //creacion de lista de los niveles ORDENADOS
+    QList<int> lista; //empieza vacia
+    for (int i = x1; i <= x2; i++)
+        for (int j = y1; j <= y2; j++)
+            lista.append(gray(i, j)); //inserta al final. tambien se puede usar: lista << valor
+
+    qSort(lista); //ordena la lista
+    //lista.size() == N
+
+    //calcula mediana
+    if (N % 2) //si N es impar
+        return (double) lista.at((N + 1) / 2); //el del medio
+    else
+        return (double) ((lista.at(N/2) + lista.at((N/2) + 1)) / 2); //es par: la media de los dos centrales
+
+}
+
+
+int Imagen::moda(int x1, int y1, int x2, int y2) {
+    int * hist2 = new int [this->M()];
+    for (int i = 0; i < M(); i++)
+        hist2[i] = 0;
+
+
+    //se crea hist
+    int valor;
+    for (int i = x1; i <= x2; i++)
+        for (int j = y1; j <= y2; j++) {
+            valor = this->gray(i, j);
+            hist2[valor]++; //frecuencia absoluta de nivel de gris val
+        }
+
+    //calcula moda (valor de gris de maxima frecuencia)
+    int maximo = hist2[0];
+    valor = 0;
+    for (int i = 0; i < M(); i++)
+        if (maximo < hist2[i]) {
+            maximo = hist2[i];
+            valor = i;
+        }
+
+    return valor;
 }

@@ -344,7 +344,8 @@ void aShot::info_imagen() {
                                  + "<p><b>Contraste:</b> " + QString::number(imagenRect.contraste()) + "</p>"
                                  +"<p><b>Entropia:</b> " + QString::number(imagenRect.entropia()) + "</p>"
                                  + "<p><b>Rango Dinamico:</b> [" + QString::number(imagenRect.minRango()) + ".." + QString::number(imagenRect.maxRango()) + "]</p>"
-                                 + "<p><b>Frecuencia maxima:</b> " + QString::number(imagenRect.maxh()) + " (nivel: " + QString::number(imagenRect.max_vin()) + ")</p>" );
+                                 + "<p><b>Moda: </b> " + QString::number(imagenRect.moda()) + ", correspondiente a la <b>frecuencia maxima: </b> " + QString::number(imagenRect.maxh()) + "</p>"
+                                 + "<p><b>Mediana: </b>" + QString::number(imagenRect.mediana()) + "</p>");
 
     }
 
@@ -569,36 +570,25 @@ void aShot::prueba() { //pintar negro en diagonal
         return;
     }
 
-    int N; //altura o anchura de imagen
-    if (imagenRect.width() > imagenRect.height())
-        N = imagenRect.width();
-    else
-        N = imagenRect.height();
-
-    for (int i = 0; i < N; i++) {//recorre diagonal
-
-        if (imagenRect.width() == imagenRect.height()) //imagen cuadrada
-            imagenRect.qimage.setPixel(i, i, 0);
-
-        double dist_diag; //numero de pixeles seguidos en la diagonal por ser imagen cuadrada
-        int n_diag; //numero de pixeles de la diagonal
-
-        if (imagenRect.width() > imagenRect.height()) { //ancho mayor
-            dist_diag = (double) imagenRect.width() / (double) imagenRect.height();
-            n_diag = imagenRect.width();
-            //printf("\nmayor ancho setpixel: (%d, %d)", i, (int) ((double) i / dist_diag));
-            imagenRect.qimage.setPixel(i, (int) ((double) i / dist_diag), 0);
-        }
-
-        if (imagenRect.width() < imagenRect.height()) { //alto mayor
-            dist_diag = (double) imagenRect.height() / (double) imagenRect.width();
-            n_diag = height();
-            //printf("\nmayor alto setpixel: (%d, %d)", (int) ((double) i / dist_diag), i);
-            imagenRect.qimage.setPixel((int) ((double) i / dist_diag), i, 0);
-        }
-    } //for
+    for (int i = 0; i < imagenRect.nDiagonal(); i++) {
+        QPoint p = imagenRect.posPerfil(i);
+        imagenRect.qimage.setPixel(p.x(), p.y(), 0);
+    }
 
     imagenRect.update();
+
+    printf("\nmoda de toda la region: %d", imagenRect.moda(0, 0, imagenRect.width() - 1, imagenRect.height() - 1));
+    printf("\nmoda normal: %d", imagenRect.moda());
+
+    printf("\nmediana de toda la region: %f", imagenRect.mediana(0, 0, imagenRect.width() - 1, imagenRect.height() - 1));
+    printf("\nmediana normal: %f", imagenRect.mediana());
+
+    printf("\nbrillo de toda la region: %f", imagenRect.brillo(0, 0, imagenRect.width() - 1, imagenRect.height() - 1));
+    printf("\nbrillo normal: %f", imagenRect.brillo());
+
+    printf("\ncontraste de toda la region: %f", imagenRect.contraste(0, 0, imagenRect.width() - 1, imagenRect.height() - 1));
+    printf("\ncontraste normal: %f", imagenRect.contraste());
+
     updateAll();  //actualiza label
 
 }
@@ -686,6 +676,8 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionRUniforme, SIGNAL(triggered()), this, SLOT(showNewRUniforme()));
     connect(ui->actionRImpulsivo, SIGNAL(triggered()), this, SLOT(showNewRImpulsivo()));
     connect(ui->actionRGuassiano, SIGNAL(triggered()), this, SLOT(showNewRGaussiano()));
+    connect(ui->actionFMedia, SIGNAL(triggered()), this, SLOT(showNewFMedia()));
+    connect(ui->actionFModa, SIGNAL(triggered()), this, SLOT(showNewFModa()));
 }
 
 void aShot::enableActions(bool b) {
@@ -806,4 +798,38 @@ void aShot::applyRGaussiano() {
     imagenRect = rGaussiano->imagenAux;
     updateAll();
 }
+
+
+
+void aShot::showNewFMedia() {
+    fMedia = new FMedia(0, imagenRect);
+    imagenAnt = imagen;
+    connect(fMedia, SIGNAL(changed()), this, SLOT(applyFMedia()));
+    connect(fMedia, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    fMedia->show();
+}
+
+
+void aShot::applyFMedia() {
+    imagenRect = fMedia->imagenAux;
+    updateAll();
+}
+
+
+
+void aShot::showNewFModa() {
+    fModa = new FModa(0, imagenRect);
+    imagenAnt = imagen;
+    connect(fModa, SIGNAL(changed()), this, SLOT(applyFModa()));
+    connect(fModa, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    fModa->show();
+}
+
+
+void aShot::applyFModa() {
+    imagenRect = fModa->imagenAux;
+    updateAll();
+}
+
+
 
