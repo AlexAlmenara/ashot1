@@ -92,7 +92,7 @@ void Diferencia::abrir() { //reinicia, abre otra imagen y ejecuta la conversion
 
 void Diferencia::histResult() { //histograma de la imagen diferencia
     Histograma * histograma;
-    if (imagenAux.max_vin() == 0) //casi todo lo restado da 0: bajar escala en eje y
+    if (imagenAux.moda() == 0) //casi todo lo restado da 0: bajar escala en eje y
         histograma = new Histograma(0, imagenAux, (double) imagenAux.maxh() / 10.0);
     else
         histograma = new Histograma(0, imagenAux);

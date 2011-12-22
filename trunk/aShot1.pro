@@ -25,7 +25,9 @@ SOURCES += main.cpp\
     Imagen/diferencia.cpp \
     Filtros/runiforme.cpp \
     Filtros/rimpulsivo.cpp \
-    Filtros/rgaussiano.cpp
+    Filtros/rgaussiano.cpp \
+    Filtros/fmedia.cpp \
+    Filtros/fmoda.cpp
 
 HEADERS  += ashot.h \
     Ayuda/ayuda.h \
@@ -41,7 +43,9 @@ HEADERS  += ashot.h \
     Imagen/diferencia.h \
     Filtros/runiforme.h \
     Filtros/rimpulsivo.h \
-    Filtros/rgaussiano.h
+    Filtros/rgaussiano.h \
+    Filtros/fmedia.h \
+    Filtros/fmoda.h
 
 FORMS    += ashot.ui \
     Ayuda/ayuda.ui \
@@ -56,10 +60,18 @@ FORMS    += ashot.ui \
     Imagen/diferencia.ui \
     Filtros/runiforme.ui \
     Filtros/rimpulsivo.ui \
-    Filtros/rgaussiano.ui
+    Filtros/rgaussiano.ui \
+    Filtros/fmedia.ui \
+    Filtros/fmoda.ui
 
 RESOURCES += \
     resources/aShotResources.qrc
+
+
+
+
+
+
 
 
 

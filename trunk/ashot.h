@@ -17,9 +17,14 @@
 #include "Imagen/diferencia.h"
 
 //Practica 2:
+//ruidos
 #include "Filtros/runiforme.h"
 #include "Filtros/rimpulsivo.h"
 #include "Filtros/rgaussiano.h"
+
+//filtros
+#include "Filtros/fmedia.h"
+#include "Filtros/fmoda.h"
 
 
 namespace Ui {
@@ -65,9 +70,14 @@ private:
     QPoint p1, p2; //puntos para region de seleccion (QRect rect)
 
     //Practica 2
+    //ruidos
     RUniforme * rUniforme;
     RImpulsivo * rImpulsivo;
     RGaussiano * rGaussiano;
+
+    //filtros
+    FMedia * fMedia;
+    FModa * fModa;
 
 
 
@@ -137,12 +147,19 @@ public slots:
     void showNewPerfil();
 
     //Practica 2
+    //ruidos
     void showNewRUniforme();
     void applyRUniforme();
     void showNewRImpulsivo();
     void applyRImpulsivo();
     void showNewRGaussiano();
     void applyRGaussiano();
+
+    //filtros
+    void showNewFMedia();
+    void applyFMedia();
+    void showNewFModa();
+    void applyFModa();
 };
 
 #endif // ASHOT_H

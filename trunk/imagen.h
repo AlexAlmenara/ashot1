@@ -3,10 +3,10 @@
 
 #include <QString>
 #include <QImage>
-#include <QtGui>
+//#include <QtGui>
 
-#include <QMainWindow>
-#include <QPrinter>
+//#include <QMainWindow>
+//#include <QPrinter>
 
 class Imagen {
 
@@ -35,7 +35,8 @@ public:
     int error(); //se saca el error para que lo lea aShot y sace un MessageBox
     int M(); //numero total de niveles
     int maxh(); //maximo valor de frecuencia (sin saber de q nivel es, es solo para saber dibujar histograma
-    int max_vin(); //nivel de gris correspondiente a maxh
+    int moda(); //(max_vin) moda estadistica: nivel de gris correspondiente a maxh, el nivel mas frecuente
+    double mediana(); //mediana estadistica: estando ordenados los niveles, devuelve el nivel que este a la mitad
     int maxRango(); //rango dinamico: [min, max]
     int minRango();
     double brillo();
@@ -67,6 +68,7 @@ public:
     int dperfil(int i); //derivada de la funcion perfil
     int perfilSuave(int i);  //perfil suavizado: media de pixel i sus dos vecinos
     int dperfilSuave(int i);
+    QPoint posPerfil(int i); //devuelve posicion de imagen de perfil i
     //void setPixel(int value);
 
     //QImage qImage();
@@ -75,6 +77,13 @@ public:
     QString extension();
     QString formato();
     bool isNull();
+
+
+    //pract2: renombramiento de funciones anteriores pero para una region
+    double brillo(int x1, int y1, int x2, int y2);
+    double contraste(int x1, int y1, int x2, int y2);
+    double mediana(int x1, int y1, int x2, int y2);
+    int moda(int x1, int y1, int x2, int y2);
 
 
 };
