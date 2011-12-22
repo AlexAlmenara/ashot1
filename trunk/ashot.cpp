@@ -678,6 +678,9 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionRGuassiano, SIGNAL(triggered()), this, SLOT(showNewRGaussiano()));
     connect(ui->actionFMedia, SIGNAL(triggered()), this, SLOT(showNewFMedia()));
     connect(ui->actionFModa, SIGNAL(triggered()), this, SLOT(showNewFModa()));
+    connect(ui->actionFMediana, SIGNAL(triggered()), this, SLOT(showNewFMediana()));
+    connect(ui->actionFDif_Estadistica, SIGNAL(triggered()), this, SLOT(showNewFDifest()));
+    connect(ui->actionFK_Vecinos, SIGNAL(triggered()), this, SLOT(showNewFVecinos()));
 }
 
 void aShot::enableActions(bool b) {
@@ -832,4 +835,48 @@ void aShot::applyFModa() {
 }
 
 
+void aShot::showNewFMediana() {
+    fMediana = new FMediana(0, imagenRect);
+    imagenAnt = imagen;
+    connect(fMediana, SIGNAL(changed()), this, SLOT(applyFMediana()));
+    connect(fMediana, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    fMediana->show();
+}
+
+
+void aShot::applyFMediana() {
+    imagenRect = fMediana->imagenAux;
+    updateAll();
+}
+
+
+void aShot::showNewFDifest() {
+    fDifest = new FDifest(0, imagenRect);
+    imagenAnt = imagen;
+    connect(fDifest, SIGNAL(changed()), this, SLOT(applyFDifest()));
+    connect(fDifest, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    fDifest->show();
+}
+
+
+void aShot::applyFDifest() {
+    imagenRect = fDifest->imagenAux;
+    updateAll();
+}
+
+
+
+void aShot::showNewFVecinos() {
+    fVecinos = new FVecinos(0, imagenRect);
+    imagenAnt = imagen;
+    connect(fVecinos, SIGNAL(changed()), this, SLOT(applyFVecinos()));
+    connect(fVecinos, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    fVecinos->show();
+}
+
+
+void aShot::applyFVecinos() {
+    imagenRect = fVecinos->imagenAux;
+    updateAll();
+}
 

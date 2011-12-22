@@ -27,7 +27,8 @@ Perfil::~Perfil()
 
 
 void Perfil::updatePunto() {
-    ui->labelPunto->setText("Pixel: " + QString::number((int) function->getX()) + ", Valor: " + QString::number(function->getY()));
+    QPoint p = imagen.posPerfil(function->getX());
+    ui->labelPunto->setText("Pixel: " + QString::number((int) function->getX()) + " (" + QString::number(p.x()) + ", " + QString::number(p.y()) + "), Valor: " + QString::number(function->getY()));
 }
 
 
