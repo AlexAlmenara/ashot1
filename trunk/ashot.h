@@ -30,6 +30,13 @@
 #include "Filtros/fvecinos.h"
 
 
+//herramientas
+#define H_CURSOR 0
+#define H_SELECCION 1
+#define H_PINCEL 2
+
+
+
 namespace Ui {
     class aShot;
 }
@@ -86,6 +93,8 @@ private:
     FVecinos * fVecinos;
 
 
+    //Practica 3 y mas
+    int herramienta;
 
 #ifndef QT_NO_PRINTER
     QPrinter printer;
@@ -172,6 +181,17 @@ public slots:
     void applyFDifest();
     void showNewFVecinos();
     void applyFVecinos();
+
+
+    //Practica 3 y mas
+    void selectHerramienta(); //al checkear una herramienta, descheckea las demas
+
+    void espejoVertical();
+    void espejoHorizontal();
+    void traspuesta();
+    void rotar90();
+    void rotar180();
+    void rotar270();
 };
 
 #endif // ASHOT_H

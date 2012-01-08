@@ -6,5 +6,8 @@
         <file>editar-archivo-de-salvar-en-disco-icono-4876-48.png</file>
         <file>imprimir-agt-icono-9402-48.png</file>
         <file>abrir-el-archivo-cian-icono-6651-128.png</file>
+        <file>selection-select-icon.png</file>
+        <file>cursor-icon.png</file>
+        <file>Brush-icon.png</file>
     </qresource>
 </RCC>

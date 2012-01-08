@@ -2,15 +2,8 @@
 #include "ui_ashot.h"
 
 #include <math.h>
-//#include <iostream>
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <sstream>
-//#include <string>
-
+//#include <iostream> //#include <stdio.h> //#include <stdlib.h> //#include <sstream> //#include <string>
 //using namespace std;
-
-
 
 aShot::aShot(QWidget *parent) :
     QMainWindow(parent),
@@ -19,18 +12,12 @@ aShot::aShot(QWidget *parent) :
     ui->setupUi(this);
 
     //PRUEBAS:
-    //BrilloContraste bc;
-    //bc.show();
     //ui->mdiArea->addSubWindow();
     //ui->subwindow->hide();
-    //connect(ui->action_Abrir, SIGNAL(triggered()), ui->subwindow, SLOT(close()));
-    //connect(ui->action_Abrir, SIGNAL(triggered()), bc, SLOT(show()));
     //QMainWindow qm = new QMainWindow(this);
     //qm.show();
     //Form f; //QWidget
-    //connect(ui->action_Abrir, SIGNAL(triggered()), f, SLOT(show()));
-    //connect(ui->action_Abrir, SIGNAL(triggered()), this, SLOT(OpenNewWindow()));
-
+    //setAttribute(Qt::WA_OpaquePaintEvent); //setMouseTracking(false);
 
     ui->imageLabel->setBackgroundRole(QPalette::Base);
     ui->imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -40,7 +27,6 @@ aShot::aShot(QWidget *parent) :
     ui->scrollArea->setBackgroundRole(QPalette::Dark);
     ui->scrollArea->setWidget(ui->imageLabel);
     setCentralWidget(ui->scrollArea);
-
     //setWindowTitle(tr("aShot 1.0")); //se hace tambien con Qt Designer
     resize(600, 500);
 
@@ -48,18 +34,14 @@ aShot::aShot(QWidget *parent) :
     undo = QStack<Imagen>();
     redo = QStack<Imagen>();
 
-    //setAttribute(Qt::WA_OpaquePaintEvent);
     connectActions();
     enableActions(false);
     abrir(); //para acelerar la depuracion
-
-    //setMouseTracking(false);
 }
 
 aShot::~aShot() {
     delete ui;
 }
-
 
 void aShot::updateImageLabel() {
     ui->imageLabel->setPixmap(QPixmap::fromImage(imagen.qimage));
@@ -72,21 +54,18 @@ void aShot::updateImageLabel() {
 
     if (!ui->actionAjustar_a_ventana->isChecked())
         ui->imageLabel->adjustSize();
-}
 
+    resize(imagen.width() + 50, imagen.height() + 100); //+ las barras etc
+}
 
 void aShot::pegarImagenRect() {
     imagen.pegarImagen(imagenRect, p1);
 }
 
-
-
 void aShot::updateAll() { //actualiza imagen y imageLabel
     pegarImagenRect();
     updateImageLabel();
 }
-
-
 
 void aShot::addDeshacer() { //se añade tras un cambio en la imagen
     undo.push(imagenAnt);
@@ -98,11 +77,9 @@ void aShot::addDeshacer() { //se añade tras un cambio en la imagen
     ui->actionRehacer->setEnabled(false);
 }
 
-
 //protected: events
 void aShot::mousePressEvent(QMouseEvent* event) {
     if (hasImage) {
-        //printf("(%d, %d)", ui->scrollArea->pos().x(), ui->scrollArea->pos().y());
         int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
         int y = event->y() - ui->scrollArea->pos().y();
         if ((x <= ui->imageLabel->width()) && (y <= ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
@@ -112,9 +89,8 @@ void aShot::mousePressEvent(QMouseEvent* event) {
     }
 }
 
-void aShot::mouseMoveEvent(QMouseEvent *event) {
+void aShot::mouseMoveEvent(QMouseEvent *event) { //mover raton
     if (hasImage) {
-        //printf("(%d, %d)", ui->scrollArea->pos().x(), ui->scrollArea->pos().y());
         int x = event->x() - ui->scrollArea->pos().x(); //tambien event->pos().x()
         int y = event->y() - ui->scrollArea->pos().y();
         if ((x < ui->imageLabel->width()) && (y < ui->imageLabel->height()) && (x >= 0) && (y >= 0)) {
@@ -126,40 +102,72 @@ void aShot::mouseMoveEvent(QMouseEvent *event) {
 }
 
 
-void aShot::mouseReleaseEvent(QMouseEvent *) {
-    if (hasImage) {
-        //printf("se ha soltado raton");
-        imagenRect.setQImage(imagen.qimage.copy(QRect(p1, p2))); //copia imagen a partir de region de seleccion
-    }
+void aShot::mouseReleaseEvent(QMouseEvent *) { //al soltar el raton se termina de dibujar
+    if (!hasImage)
+        return;
+
+    switch (herramienta) {
+    case H_SELECCION:
+        imagenRect.setQImage(imagen.qimage.copy(QRect(p1, p2))); //copia imagen a partir de region de seleccion. ya hace update() de imagen
+        break;
+
+    case H_PINCEL:
+        imagenAnt = imagen; //guarda para deshacer
+        addDeshacer();
+        QPainter painter(&imagenRect.qimage);
+        painter.drawLine(p1, p2); //pinta sobre la imagen una linea
+        imagenRect.update();
+        updateAll();
+        break;
+    } //switch
 }
 
-
-void aShot::mouseDoubleClickEvent(QMouseEvent *) {
-    if (hasImage) {
+void aShot::mouseDoubleClickEvent(QMouseEvent *) { //doble click para quitar rectangulo de seleccion
+    if ((hasImage) && (herramienta == H_SELECCION)) {
         updateImageLabel(); //quita el rectangulo
         p1 = QPoint(0, 0); //la region de seleccion es toda la imagen
         p2 = QPoint(imagen.width() - 1, imagen.height() - 1);
-        imagenRect = imagen;
+        imagenRect = imagen; //la seleccion (y el cursor) son las unicas herramientas que no modifican, asi que vuelve como estaba
     }
 }
 
-
 void aShot::paintEvent(QPaintEvent *) {
-    if ((hasImage) && (p1 != QPoint(0, 0)) && (p2 != QPoint(imagen.width(), imagen.height()))) { //para no dibujar rect de toda la imagen
+    if (!hasImage)
+        return;
+
+    switch (herramienta) {
+    case H_SELECCION:
+        if ((p1 != QPoint(0, 0)) && (p2 != QPoint(imagen.width(), imagen.height()))) { //para no dibujar rect de toda la imagen
+            updateImageLabel();
+            QPixmap pic = (QPixmap) *ui->imageLabel->pixmap();
+            QPainter painter(&pic);
+            QPen pen = QPen(Qt::blue, 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin); //tambien: pen.setBrush(Qt::blue);
+            painter.setPen(pen);
+
+            painter.drawRect(QRect(p1, p2));
+
+            painter.end();
+            ui->imageLabel->setPixmap(pic);
+        }
+        break;
+
+    case H_PINCEL:
         updateImageLabel();
+
         QPixmap pic = (QPixmap) *ui->imageLabel->pixmap();
         QPainter painter(&pic);
-        QPen pen = QPen(Qt::blue, 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin); //tambien: pen.setBrush(Qt::blue);
+        QPen pen = QPen(Qt::blue, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); //tambien: pen.setBrush(Qt::blue);
         painter.setPen(pen);
 
-        painter.drawRect(QRect(p1, p2));
+        painter.drawLine(p1, p2);
 
         painter.end();
         ui->imageLabel->setPixmap(pic);
-    }
+        break;
+    //default: H_CURSOR: nada
 
+    } //switch
 }
-
 
 
 //slots:
@@ -176,20 +184,19 @@ void aShot::abrirNew() {
 
 void aShot::cerrarTodo() {
     qApp->closeAllWindows();
-    ui->imageLabel->setPixmap(NULL);
-    //ui->imageLabel = new QLabel();
+    ui->imageLabel->setPixmap(NULL); //ui->imageLabel->setText("");
+    ui->imageLabel->setGeometry(10, 10, 20, 20);  //ui->imageLabel = new QLabel();
     enableActions(false);
     undo.clear();
     redo.clear();
 
-    this->show();
-    //imagen = nada, no hace falta
+    this->show(); //imagen = nada, no hace falta
     hasImage = false;
+    resize(600, 500);
 }
 
 void aShot::abrir() {
-    QString fileName = "/home/alex/Escritorio/berserk.jpg"; //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //
-
+    QString fileName = "/home/alex/Escritorio/doutzen.tif"; //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //"
     if (!fileName.isEmpty()) {
         imagen = Imagen(fileName);
         if (imagen.isNull()) {
@@ -197,7 +204,7 @@ void aShot::abrir() {
             return;
         }
 
-        resize(imagen.width(), imagen.height() + 200); //+ las barras etc
+        resize(imagen.width() + 50, imagen.height() + 100); //+ las barras etc
         enableActions(true);
         updateZoomActions();
         updateImageLabel();
@@ -208,24 +215,17 @@ void aShot::abrir() {
     }
 }
 
-
-
 void aShot::guardar() {
     const QString fileName = imagen.fileName();
     imagen.qimage.save(fileName, 0, -1);
 }
 
-
 void aShot::guardarComo() {
     const QString fileName = QFileDialog::getSaveFileName(this, tr("Guardar archivo"), QDir::currentPath());
     imagen.qimage.save(fileName, 0, -1);
     /* QMessageBox::information(this, tr("aShot Guardar"), tr("No se puede Guardar %1.").arg(fileName));
-        return;
-    }*/
+       return; */
 }
-
-
-
 
 void aShot::imprimir() {
     Q_ASSERT(ui->imageLabel->pixmap());//comprueba que haya imagen
@@ -265,8 +265,6 @@ void aShot::fitToWindow() {
     updateZoomActions();
 }
 
-
-
 void aShot::deshacer() {
   //if (undo.size > 0)
   redo.push(imagen); //guarda por si nos equivocamos con deshacer y queremos volver
@@ -300,36 +298,23 @@ void aShot::rehacer() {
     updateAll();
 }
 
-
 void aShot::anteriorImagen() { //solo se ejecutara si undo tiene algo
     labelAnt.setPixmap(QPixmap::fromImage(undo.top().qimage));
     labelAnt.show();
     labelAnt.move(this->x() + 600, this->y());
 }
 
-
-
 void aShot::anteriorHistograma() { //solo se ejecutara si undo tiene algo
     Histograma * hist = new Histograma(0, undo.top());
     hist->show();
 }
 
-
 void aShot::info_imagen() {
-    /*if (imagen == NULL)
-        QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
-    else*/
-
-    if (imagen.isNull())
+    if (imagen.isNull())  // == NULL
         QMessageBox::information(this, tr("Informacion de la imagen"), tr("No se ha podido cargar la imagen"));
     else {
         //itoa(image->height(), buffer, 10);
-        //QRgb pix = imagen.qimage.pixel(4, 5);
-        //int val = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
-        //tambien esta qGreen, qRed, qBlue
-        /*ostringstream s;
-        s << imagen.entropia();
-        string cadena = s.str();*/
+        /* ostringstream s; s << imagen.entropia(); string cadena = s.str();*/
 
         QMessageBox::information(this, tr("Informacion de la imagen"),
                                  "<p><b>Nombre del fichero: </b>" + imagenRect.fileName() + "</p>"
@@ -368,39 +353,19 @@ void aShot::acercade() {
                "shows how to use QPainter to print an image.</p>"));
 }
 
-
-
-void aShot::toGray() {
-    QVector<QRgb> tabla = QVector<QRgb>(256);
+void aShot::toGray() { //si la imagen ENTERA es en color la convierte en formato 8 bits indexado y escala de grises
+    imagenAnt = imagen;
+    addDeshacer();
     //tabla.append(pix);
     //pix = imagen.qimage.color(indice); //devuelve rgb del indice de tabla indexada
     //indice = imagen.qimage.pixelIndex(i, j); //devuelve el indice de la tabla indexada
 
-
-    /*imagen.qimage = imagen.qimage.convertToFormat(QImage::Format_Indexed8); //3: escala de grises indexad
-
-    QRgb pix;
-    int value;
-    for (int i = 0; i < imagen.width(); i++) // igual: qimage.width()
-        for (int j = 0; j < imagen.height(); j++) {
-            pix = imagen.qimage.pixel(i, j);
-            value = (int) (0.299 * (double) qRed(pix) + 0.587 * (double) qGreen(pix) + 0.114 * (double) qBlue(pix)); //NTSC
-            //value = qGray(pix); //es casi equivalente
-            if (value > imagen.M() - 1)
-                value = imagen.M() - 1;
-
-            if (value < 0)
-                value = 0;
-
-            pix = qRgb(value, value, value);
-            imagen.qimage.setColor(value, pix);
-            imagen.qimage.setPixel(i, j, value); //escritura tipo imagen RGB, diferente de 8 bits indexado
-        }*/
-
-    imagenAnt = imagen;
-    addDeshacer();
-
-
+    //version 1
+    QVector<QRgb> tabla; //= QVector<QRgb>(256);
+    for (int i = 0; i < 256; i++) {
+       //tabla.remove(i);
+       tabla.insert(i, qRgb(i, i, i)); //inserta grises
+    }
     QRgb pix;
     int value;
     for (int i = 0; i < imagen.width(); i++) // igual: qimage.width()
@@ -415,31 +380,44 @@ void aShot::toGray() {
                 value = 0;
 
             pix = qRgb(value, value, value);
-            tabla.remove(value);
-            tabla.insert(value, pix);
             imagen.qimage.setPixel(i, j, pix); //escritura tipo imagen RGB, diferente de 8 bits indexado
         }
-
-    /*for (int i = 0; i < tabla.size(); i++)
-        printf("%d, ", qGray(tabla[i]));*/
-
     imagen.qimage = imagen.qimage.convertToFormat(QImage::Format_Indexed8, tabla); //3: escala de grises indexado
+    imagen.update();
+    imagenRect = imagen;
 
-    /*for (int i = 0; i < imagen.width(); i++) // igual: qimage.width()
+    //version 2
+    /*QVector<QRgb> tabla; // = QVector<QRgb>(256);
+    for (int i = 0; i < 256; i++) {
+       //tabla.remove(i);
+       tabla.insert(i, qRgb(i, i, i)); //inserta grises
+    }
+    //for (int i = 0; i < tabla.size(); i++) printf("%d, ", qGray(tabla[i]));
+    QImage qi = QImage(imagen.width(), imagen.height(), QImage::Format_Indexed8);
+    qi.setColorTable(tabla);
+    Imagen igray = Imagen(qi, imagen.fileName());
+    QRgb pix;
+    int value;
+    for (int i = 0; i < imagen.width(); i++) // igual: qimage.width()
         for (int j = 0; j < imagen.height(); j++) {
             pix = imagen.qimage.pixel(i, j);
-            value = qGray(pix);
-            pix = qRgb(value, value, value);
-            imagen.qimage.setColor(value, pix);
-            //imagen.qimage.setPixel(i, j, value);
-        }*/
+            value = (int) ((0.299 * (double) qRed(pix) + 0.587 * (double) qGreen(pix) + 0.114 * (double) qBlue(pix)) + 0.5); //NTSC
+            //value = qGray(pix); //es casi equivalente
+            if (value > imagen.M() - 1)
+                value = imagen.M() - 1;
 
+            if (value < 0)
+                value = 0;
+            igray.qimage.setPixel(i, j, value); //tipo 8 bit: inserta valor de indice
+        }
+    igray.update();
+    imagenRect = igray;
+    imagen = igray;
+    */
 
-    imagen.update();
     updateImageLabel();
     ui->actionToGray->setEnabled(false);
 }
-
 
 void aShot::negativo() {
     imagenAnt = imagen;
@@ -450,19 +428,16 @@ void aShot::negativo() {
     updateAll();
 }
 
-
 //slots de tratamiento para ventanitas de edicion de imagen
 void aShot::showNewHistograma() {
     Histograma * histograma = new Histograma(0, imagenRect);
     histograma->show();
 }
 
-
 void aShot::showNewPerfil() {
     Perfil * perfil = new Perfil(0, imagenRect);
     perfil->show();
 }
-
 
 void aShot::showNewBC() { //crea bc y lo muestra
     bc = new BrilloContraste(0, imagenRect);
@@ -474,19 +449,10 @@ void aShot::showNewBC() { //crea bc y lo muestra
     bc->show();
 }
 
-
-/*void aShot::applyDestroyBC() {
-    //delete imagen;
-    imagenRect = bc->imagenAux; //tambien pasa si se cancela, pero no importa, en ese caso imageAux seria la imagen original
-    //imagen = new Imagen(bc->imagenAux->fileName());
-    delete bc;
-}*/
-
 void aShot::applyBC() {
     imagenRect = bc->imagenAux;
     updateAll();
 }
-
 
 void aShot::showNewLogexp() {
     logexp = new Logexp(0, imagenRect);
@@ -500,7 +466,6 @@ void aShot::applyLogexp() {
     imagenRect = logexp->imagenAux;
     updateAll();
 }
-
 
 void aShot::showNewTramos() {
     tramos = new Tramos(0, imagenRect);
@@ -516,7 +481,6 @@ void aShot::applyDestroyTramos() {
     //delete tramos;
 }
 
-
 void aShot::showNewHespecif() {
     hespecif = new Hespecif(0, imagenRect);
     imagenAnt = imagen;
@@ -530,7 +494,6 @@ void aShot::applyHespecif() {
     imagenRect = hespecif->imagenAux;
     updateAll();
 }
-
 
 void aShot::showNewDigit() {
     digit = new Digitalizar(0, imagenRect);
@@ -560,7 +523,6 @@ void aShot::applyDiferencia() {
 }
 
 
-
 void aShot::prueba() { //pintar negro en diagonal
     imagenAnt = imagen;
     addDeshacer();
@@ -569,12 +531,10 @@ void aShot::prueba() { //pintar negro en diagonal
         QMessageBox::information(this, tr("Informacion de la imagen"), "no es monocromo indexado");
         return;
     }
-
     for (int i = 0; i < imagenRect.nDiagonal(); i++) {
         QPoint p = imagenRect.posPerfil(i);
         imagenRect.qimage.setPixel(p.x(), p.y(), 0);
     }
-
     imagenRect.update();
 
     printf("\nmoda de toda la region: %d", imagenRect.moda(0, 0, imagenRect.width() - 1, imagenRect.height() - 1));
@@ -589,11 +549,19 @@ void aShot::prueba() { //pintar negro en diagonal
     printf("\ncontraste de toda la region: %f", imagenRect.contraste(0, 0, imagenRect.width() - 1, imagenRect.height() - 1));
     printf("\ncontraste normal: %f", imagenRect.contraste());
 
+    /*Imagen im = Imagen();
+    if (im.isNull())
+        printf("\nes nulllll");*/
+
+    /*QVector<QRgb> tabla = imagenRect.qimage.colorTable();
+    tabla.append(QColor(255, 255, 255, 0).rgba());
+    tabla.insert(256, qRgb(255, 255, 255));
+    imagenRect.qimage.setColorTable(tabla);
+    for (int i = 0; i < imagenRect.width(); i++)
+    imagenRect.qimage.setPixel(i, 30, 256); //no da error, pero asi no escribe el nivel nuevo 256 sino el 0 */
+
     updateAll();  //actualiza label
-
 }
-
-
 
 void aShot::ecualizar() { //ecualizacion del histograma: aproximacion de distribucion uniforme, mantiene entropia
     imagenAnt = imagen;
@@ -681,29 +649,32 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionFMediana, SIGNAL(triggered()), this, SLOT(showNewFMediana()));
     connect(ui->actionFDif_Estadistica, SIGNAL(triggered()), this, SLOT(showNewFDifest()));
     connect(ui->actionFK_Vecinos, SIGNAL(triggered()), this, SLOT(showNewFVecinos()));
+
+
+    //Practica 3 y mas
+
+    //herramientas
+    connect(ui->actionCursor, SIGNAL(triggered()), this, SLOT(selectHerramienta()));
+    connect(ui->actionSeleccion, SIGNAL(triggered()), this, SLOT(selectHerramienta()));
+    connect(ui->actionPincel, SIGNAL(triggered()), this, SLOT(selectHerramienta()));
+
+
+    //transformaciones geometricas
+    connect(ui->actionEspejo_vertical, SIGNAL(triggered()), this, SLOT(espejoVertical()));
+    connect(ui->actionEspejo_horizontal, SIGNAL(triggered()), this, SLOT(espejoHorizontal()));
+    connect(ui->actionTraspuesta, SIGNAL(triggered()), this, SLOT(traspuesta()));
+    connect(ui->action90, SIGNAL(triggered()), this, SLOT(rotar90()));
+    connect(ui->action180, SIGNAL(triggered()), this, SLOT(rotar180()));
+    connect(ui->action270, SIGNAL(triggered()), this, SLOT(rotar270()));
 }
 
 void aShot::enableActions(bool b) {
-    ui->menuAjustes->setEnabled(b);
-    ui->actionBrillo_Contraste->setEnabled(b);
-    ui->actionLog_Exp->setEnabled(b);
-    ui->actionTramos->setEnabled(b);
-    ui->actionHespecif->setEnabled(b);
-    ui->actionDigitalizar->setEnabled(b);
-    ui->actionDiferencia->setEnabled(b);
-
-    ui->actionAjustar_a_ventana->setEnabled(b);
-    ui->action_Cerrar->setEnabled(b);
-    ui->actionCerrar_todo->setEnabled(b);
+    //Archivo
     ui->action_Guardar->setEnabled(b);
     ui->actionGuardar_como->setEnabled(b);
     ui->actionIm_primir->setEnabled(b);
-    ui->action_Informacion_imagen->setEnabled(b);
-    ui->actionNegativo->setEnabled(b);
-    ui->actionEcualizar->setEnabled(b);
-    ui->action_Histograma->setEnabled(b);
-    ui->actionPerfil->setEnabled(b);
 
+    //Editar
     if (b == false) { //solo si es false, a true ya se hace cuando se haga un cambio en imagen
         ui->actionDeshacer->setEnabled(false);
         ui->actionRehacer->setEnabled(false);
@@ -711,24 +682,41 @@ void aShot::enableActions(bool b) {
         ui->actionAnterior_imagen->setEnabled(false);
     }
 
+    //Imagen
+    ui->menuAjustes->setEnabled(b); //no hace falta B/C, etc
+    ui->actionAjustar_a_ventana->setEnabled(b);
+    ui->actionRecortar->setEnabled(b);
+    ui->actionZoom_In->setEnabled(b);
+    ui->actionZoom_Out->setEnabled(b);
+    ui->actionTama_o_normal->setEnabled(b);
+    ui->action_Informacion_imagen->setEnabled(b);
+    ui->action_Histograma->setEnabled(b);
+    ui->actionPerfil->setEnabled(b);
+
+
     if ((b == true) && (imagen.qimage.format() != 3)) //si no es en escala de grises se habilita
         ui->actionToGray->setEnabled(true);
     else
         ui->actionToGray->setEnabled(false);
 
     //Practica 2:
-    ui->actionRUniforme->setEnabled(b);
-    ui->actionRGuassiano->setEnabled(b);
-    ui->actionRImpulsivo->setEnabled(b);
-
-    ui->actionFMedia->setEnabled(b);
-    ui->actionFModa->setEnabled(b);
-    ui->actionFMediana->setEnabled(b);
-    ui->actionFK_Vecinos->setEnabled(b);
-    ui->actionFDif_Estadistica->setEnabled(b);
-    ui->actionFGuassiano->setEnabled(b);
+    ui->menuSuavizado->setEnabled(b);
+    ui->menuRuidos->setEnabled(b);
     ui->actionDefinirFiltro->setEnabled(b);
-    ui->actionUsarFiltroDefinido->setEnabled(b);
+
+    //Practica 3 y mas
+    ui->menuTransform_geometricas->setEnabled(b);
+    ui->actionPincel->setEnabled(b);
+    ui->actionCursor->setEnabled(b);
+    ui->actionSeleccion->setEnabled(b);
+
+    if (b) {
+        ui->actionCursor->setChecked(true); //por defecto es el cursor
+        herramienta = H_CURSOR;
+        ui->actionSeleccion->setChecked(false); //aunque los false podrian sobrar, es por seguridad
+        ui->actionPincel->setChecked(false);
+    }
+
 }
 
 void aShot::updateZoomActions() { //activa o desactiva acciones de zoom segun la accion fitTowindow
@@ -766,12 +754,10 @@ void aShot::showNewRUniforme() {
     rUniforme->show();
 }
 
-
 void aShot::applyRUniforme() {
     imagenRect = rUniforme->imagenAux;
     updateAll();
 }
-
 
 void aShot::showNewRImpulsivo() {
     rImpulsivo = new RImpulsivo(0, imagenRect);
@@ -781,12 +767,10 @@ void aShot::showNewRImpulsivo() {
     rImpulsivo->show();
 }
 
-
 void aShot::applyRImpulsivo() {
     imagenRect = rImpulsivo->imagenAux;
     updateAll();
 }
-
 
 void aShot::showNewRGaussiano() {
     rGaussiano = new RGaussiano(0, imagenRect);
@@ -796,13 +780,10 @@ void aShot::showNewRGaussiano() {
     rGaussiano->show();
 }
 
-
 void aShot::applyRGaussiano() {
     imagenRect = rGaussiano->imagenAux;
     updateAll();
 }
-
-
 
 void aShot::showNewFMedia() {
     fMedia = new FMedia(0, imagenRect);
@@ -812,13 +793,10 @@ void aShot::showNewFMedia() {
     fMedia->show();
 }
 
-
 void aShot::applyFMedia() {
     imagenRect = fMedia->imagenAux;
     updateAll();
 }
-
-
 
 void aShot::showNewFModa() {
     fModa = new FModa(0, imagenRect);
@@ -828,12 +806,10 @@ void aShot::showNewFModa() {
     fModa->show();
 }
 
-
 void aShot::applyFModa() {
     imagenRect = fModa->imagenAux;
     updateAll();
 }
-
 
 void aShot::showNewFMediana() {
     fMediana = new FMediana(0, imagenRect);
@@ -843,12 +819,10 @@ void aShot::showNewFMediana() {
     fMediana->show();
 }
 
-
 void aShot::applyFMediana() {
     imagenRect = fMediana->imagenAux;
     updateAll();
 }
-
 
 void aShot::showNewFDifest() {
     fDifest = new FDifest(0, imagenRect);
@@ -858,13 +832,10 @@ void aShot::showNewFDifest() {
     fDifest->show();
 }
 
-
 void aShot::applyFDifest() {
     imagenRect = fDifest->imagenAux;
     updateAll();
 }
-
-
 
 void aShot::showNewFVecinos() {
     fVecinos = new FVecinos(0, imagenRect);
@@ -874,9 +845,131 @@ void aShot::showNewFVecinos() {
     fVecinos->show();
 }
 
-
 void aShot::applyFVecinos() {
     imagenRect = fVecinos->imagenAux;
     updateAll();
 }
 
+
+//Practica 3 y mas
+
+void aShot::selectHerramienta() {
+    if ((ui->actionCursor->isChecked()) && (herramienta != H_CURSOR)) { //se garantiza que esto solo pase por cada vez que se aprieta una herramienta
+        ui->actionPincel->setChecked(false);
+        ui->actionSeleccion->setChecked(false);
+        herramienta = H_CURSOR;
+    }
+    else
+    if ((ui->actionSeleccion->isChecked()) && (herramienta != H_SELECCION)) {
+        ui->actionPincel->setChecked(false);
+        ui->actionCursor->setChecked(false);
+        herramienta = H_SELECCION;
+    }
+    else
+    if ((ui->actionPincel->isChecked()) && (herramienta != H_PINCEL)) {
+        ui->actionCursor->setChecked(false);
+        ui->actionSeleccion->setChecked(false);
+        herramienta = H_PINCEL;
+    }
+
+    //y ademas reiniciamos los puntos
+    updateImageLabel();
+    p1 = QPoint(0, 0); //la region de seleccion es toda la imagen
+    p2 = QPoint(imagen.width() - 1, imagen.height() - 1);
+    imagenRect = imagen;
+}
+
+
+void aShot::espejoVertical() {
+    imagenAnt = imagen;
+    addDeshacer();
+
+    int n = (int) ((double) imagenRect.height() / 2.0);
+    int gray1, gray2;
+
+    for (int f = 0; f < n; f++) //recorre filas para intercambiarlas
+        for (int c = 0; c < imagenRect.width(); c++) { //cada elemento de la fila
+            gray1 = imagenRect.gray(c, f);
+            gray2 = imagenRect.gray(c, imagenRect.height() - 1 - f);
+            imagenRect.qimage.setPixel(c, f, gray2);
+            imagenRect.qimage.setPixel(c, imagenRect.height() - 1 - f, gray1);
+
+        }
+
+    imagenRect.update();
+    updateAll();
+}
+
+
+
+void aShot::espejoHorizontal() {
+    imagenAnt = imagen;
+    addDeshacer();
+
+    int n = (int) ((double) imagenRect.width() / 2.0);
+    int gray1, gray2;
+
+    for (int c = 0; c < n; c++) //recorre columnas para intercambiarlas
+        for (int f = 0; f < imagenRect.height(); f++) { //cada elemento de la columna
+            gray1 = imagenRect.gray(c, f);
+            gray2 = imagenRect.gray(imagenRect.width() - 1 - c, f);
+            imagenRect.qimage.setPixel(c, f, gray2);
+            imagenRect.qimage.setPixel(imagenRect.width() - 1 - c, f, gray1);
+
+        }
+
+    imagenRect.update();
+    updateAll();
+}
+
+
+void aShot::traspuesta() {
+    imagenAnt = imagen;
+    addDeshacer();
+
+    //inicio
+    Imagen trasp = Imagen( QImage(imagenRect.height(), imagenRect.width(), QImage::Format_Indexed8),
+                           imagenRect.fileName());
+
+    trasp.qimage.setColorTable(imagenRect.qimage.colorTable());
+
+    for (int i = 0; i < imagenRect.width(); i++) //recorre filas para intercambiarlas
+        for (int j = 0; j < imagenRect.height(); j++) //cada elemento de la fila
+              trasp.qimage.setPixel(j, i, imagenRect.gray(i, j));
+
+    trasp.update();
+    imagenRect = trasp;
+
+    //fin
+    updateAll();
+}
+
+void aShot::rotar90() {
+    imagenAnt = imagen;
+    addDeshacer();
+
+    imagenRect.rotar90();
+
+    updateAll();
+}
+
+void aShot::rotar180() {
+    imagenAnt = imagen;
+    addDeshacer();
+
+    imagenRect.rotar90();
+    imagenRect.rotar90();
+
+    updateAll();
+}
+
+void aShot::rotar270() {
+    imagenAnt = imagen;
+    addDeshacer();
+
+    imagenRect.rotar90();
+    imagenRect.rotar90();
+    imagenRect.rotar90();
+
+    updateAll();
+}

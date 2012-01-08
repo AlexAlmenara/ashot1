@@ -8,6 +8,12 @@
 //#include <QMainWindow>
 //#include <QPrinter>
 
+#define OPACO 255 //es pixel de imagen para mostrar en histograma
+#define TRANSP 0 //transparente: se considera fuera de la imagen, no se muestra en histograma
+
+#define COLOR_TRANSP 125 //color para transparente
+#define COLOR_APLANADO 255 //color que al aplanar convierte el transparente en plano
+
 class Imagen {
 
 private:
@@ -21,12 +27,14 @@ private:
     double dist_diag; //numero de pixeles seguidos en la diagonal por ser imagen cuadrada
     int n_diag; //numero de pixeles de la diagonal
 
+    int ** fondo; //matriz para decir que pixels son fondo, para no mostrar en histograma
+
     void createHist();
+    void initFondo(); //inicializa fondo
 
 public:
-    Imagen();
-    Imagen(QString fileName);
-    Imagen(QImage image, QString fileName = "");
+    Imagen(QString fileName = "");
+    Imagen(QImage image, QString fileName = ""); //puede ser QImage de distinta ubicacion a fileName
     //Imagen(QImage qimage); //estaria bien este constructor si al menos QImage tuviera el metodo fileName() xDD
 
     QImage qimage;
@@ -85,6 +93,13 @@ public:
     double mediana(int x1, int y1, int x2, int y2);
     int moda(int x1, int y1, int x2, int y2);
 
+    //pract3:
+    void setFondo(int ** fo); //crea una nueva matriz de fondo
+    void setPosFondo(int i, int j, int valor); //pone valor en posicion de matriz de fondo
+    void aplanar(); //vacia matriz de fondo, todos los pixeles se consideran de la imagen para mostrar
+    bool esTransp(int i, int j); //true si pixel es transparente
+
+    void rotar90(); //rota la imagen 90 grados en sentido agujas del reloj
 
 };
 

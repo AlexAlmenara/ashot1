@@ -1,42 +1,44 @@
 #include "imagen.h"
-//#include <stdio.h>
+#include <stdio.h>
 #include <math.h>
-//#include <iostream>
+#include <iostream>
 #include <QList>
 
 using namespace std;
 
-Imagen::Imagen() {
+/* Imagen::Imagen() {
     qimage = QImage();
     if (this->isNull())
         err = 1;
     else
         err = 0;
+
     update();
-}
-
-
-
+} */
 
 Imagen::Imagen(QString fileName) {
-    qimage = QImage(fileName);
+    if (fileName == "") //por defecto
+        qimage = QImage(); //imagen vacia
+    else
+        qimage = QImage(fileName);
+
     this->name = fileName;
     if (this->isNull())
         err = 1;
     else
         err = 0;
+
+    initFondo();
     update();
 }
 
 
 Imagen::Imagen(QImage image, QString fileName) {
-    setQImage(image);
     if (fileName != "")
         name = fileName;
-    //update(); //ya lo hace setQImage
+
+    setQImage(image);  //ya hace initFondo y update()
 }
-
-
 
 
 int Imagen::error() {
@@ -44,7 +46,7 @@ int Imagen::error() {
 }
 
 void Imagen::createHist() {
-    if (qimage.format() == 3) //8 bits indexado, monocromo
+    if (qimage.format() == QImage::Format_Indexed8) //8 bits indexado, monocromo
         Mniveles = 256;
     else if (qimage.format() == 4) //32 bits, RGB
         Mniveles = 256;
@@ -64,15 +66,15 @@ void Imagen::createHist() {
     }
 
     err = 0;
-    QRgb pix; //= this->qimage->pixel(4, 5); //un valor cualquiera
+    //QRgb pix; //= this->qimage->pixel(4, 5); //un valor cualquiera
     int val; //= qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
 
     //se crea hist
     for (int i = 0; i < this->width(); i++) // igual: qimage->width()
         for (int j = 0; j < this->height(); j++) {
-            pix = qimage.pixel(i, j);
-            val = qGray(pix);
-            hist[val]++; //frecuencia absoluta de nivel de gris val
+            val = gray(i, j);
+            if (fondo[i][j] == OPACO) //para esta comprobacion es para lo que existe fondo
+                hist[val]++; //frecuencia absoluta de nivel de gris val
         }
 
     //se crea acum
@@ -87,6 +89,11 @@ void Imagen::createHist() {
 
 
 void Imagen::update() {
+    if (qimage.format() == QImage::Format_Indexed8)
+        for (int i = 0; i < width(); i++)
+            for (int j = 0; j < height(); j++)
+                if (esTransp(i, j))
+                    qimage.setPixel(i, j, COLOR_TRANSP);
     createHist();
 
     //actualizacion para diagonal (perfil)
@@ -118,7 +125,7 @@ void Imagen::transformar(int * vout) {
     int vin; // = qGray(pix); //Returns a gray value (0 to 255) from the given ARGB quadruplet rgb. Formula: (R * 11 + G * 16 + B * 5)/32;
     for (int i = 0; i < width(); i++)
         for (int j = 0; j < height(); j++) {
-            vin = qGray(qimage.pixel(i, j));
+            vin = gray(i, j);
             qimage.setPixel(i, j, vout[vin]); //ya se garantiza que el tamaño de vout es de M elementos
         }
 
@@ -129,6 +136,7 @@ void Imagen::transformar(int * vout) {
 
 void Imagen::setQImage(QImage image) {
     qimage = image;
+    initFondo();
     update();
     //cuidado no se ha puesto el nombre de la imagen
 }
@@ -480,3 +488,66 @@ int Imagen::moda(int x1, int y1, int x2, int y2) {
 
     return valor;
 }
+
+
+//Practica 3:
+void Imagen::initFondo() {
+    //cout << "init fondo\n width = " << width() << ", height = " << height() << flush;
+    fondo = new int * [width()]; //creacion de matriz de ruido. fuente: http://c.conclase.net/curso/?cap=017
+    for (int i = 0; i < width(); i++) {
+        fondo[i] = new int[height()];
+        for (int j = 0; j < height(); j++)
+            fondo[i][j] = OPACO; //por defecto todos los pixeles se consideran de la imagen, para mostrar en histograma
+    }
+   // createHist();
+}
+
+void Imagen::setFondo(int **fo) {
+    fondo = fo; //if (fo != NULL) se sobreentiende para eficiencia
+    for (int i = 0; i < width(); i++)
+        for (int j = 0; j < height(); j++)
+            if (esTransp(i, j))
+                qimage.setPixel(i, j, COLOR_TRANSP);
+    createHist();
+}
+
+
+void Imagen::setPosFondo(int i, int j, int valor) {
+    fondo[i][j] = valor;     //if (fondo != NULL) //se sobreentiende que fondo[i] != NULL
+    //qimage.setPixel(i, j, COLOR_TRANSP); //ya lo hara despues update()
+}
+
+
+void Imagen::aplanar() {
+    //delete [] fondo;
+    //createHist();
+    for (int i = 0; i < width(); i++)
+        for (int j = 0; j < height(); j++)
+            if (esTransp(i, j))
+                qimage.setPixel(i, j, COLOR_APLANADO);
+    initFondo();
+    createHist();
+}
+
+bool Imagen::esTransp(int i, int j) {
+    return (fondo[i][j] != OPACO);
+}
+
+
+void Imagen::rotar90() {
+    Imagen irot = Imagen( QImage(this->height(), this->width(), QImage::Format_Indexed8),
+                           this->fileName());
+
+    irot.qimage.setColorTable(this->qimage.colorTable());
+
+    for (int i = 0; i < this->width(); i++) //recorre filas para intercambiarlas
+        for (int j = 0; j < this->height(); j++) { //cada elemento de la fila
+              irot.qimage.setPixel(this->height() - 1 - j, i, this->gray(i, j));
+              if (this->esTransp(i, j))
+                  irot.setPosFondo(this->height() - 1 - j, i, TRANSP);
+        }
+
+    irot.update();
+    *this = irot;
+}
+
