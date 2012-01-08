@@ -28,12 +28,14 @@
 #include "Filtros/fmediana.h"
 #include "Filtros/fdifest.h"
 #include "Filtros/fvecinos.h"
+#include "Filtros/fdef.h"
 
 
 //herramientas
 #define H_CURSOR 0
 #define H_SELECCION 1
 #define H_PINCEL 2
+
 
 
 
@@ -91,6 +93,7 @@ private:
     FMediana * fMediana;
     FDifest * fDifest;
     FVecinos * fVecinos;
+    FDef * fDef;
 
 
     //Practica 3 y mas
@@ -181,6 +184,8 @@ public slots:
     void applyFDifest();
     void showNewFVecinos();
     void applyFVecinos();
+    void showNewFDef();
+    void applyFDef();
 
 
     //Practica 3 y mas

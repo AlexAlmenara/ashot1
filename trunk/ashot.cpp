@@ -428,101 +428,6 @@ void aShot::negativo() {
     updateAll();
 }
 
-//slots de tratamiento para ventanitas de edicion de imagen
-void aShot::showNewHistograma() {
-    Histograma * histograma = new Histograma(0, imagenRect);
-    histograma->show();
-}
-
-void aShot::showNewPerfil() {
-    Perfil * perfil = new Perfil(0, imagenRect);
-    perfil->show();
-}
-
-void aShot::showNewBC() { //crea bc y lo muestra
-    bc = new BrilloContraste(0, imagenRect);
-    imagenAnt = imagen;
-    //this->bc = new BrilloContraste(this); //esto se hara una vez abierta la imagen
-    //connect(ui->actionBrillo_Contraste, SIGNAL(triggImpulsivoered()), this->bc, SLOT(show()));
-    connect(bc, SIGNAL(changed()), this, SLOT(applyBC()));
-    connect(bc, SIGNAL(acepted()), this, SLOT(addDeshacer()));
-    bc->show();
-}
-
-void aShot::applyBC() {
-    imagenRect = bc->imagenAux;
-    updateAll();
-}
-
-void aShot::showNewLogexp() {
-    logexp = new Logexp(0, imagenRect);
-    imagenAnt = imagen;
-    connect(logexp, SIGNAL(changed()), this, SLOT(applyLogexp()));
-    connect(logexp, SIGNAL(acepted()), this, SLOT(addDeshacer()));
-    logexp->show();
-}
-
-void aShot::applyLogexp() {
-    imagenRect = logexp->imagenAux;
-    updateAll();
-}
-
-void aShot::showNewTramos() {
-    tramos = new Tramos(0, imagenRect);
-    imagenAnt = imagen;
-    connect(tramos, SIGNAL(closed()), this, SLOT(applyDestroyTramos()));
-    tramos->show();
-}
-
-void aShot::applyDestroyTramos() {
-    addDeshacer();
-    imagenRect = tramos->imagenAux;
-    updateAll();
-    //delete tramos;
-}
-
-void aShot::showNewHespecif() {
-    hespecif = new Hespecif(0, imagenRect);
-    imagenAnt = imagen;
-    connect(hespecif, SIGNAL(changed()), this, SLOT(applyHespecif()));
-    connect(hespecif, SIGNAL(acepted()), this, SLOT(addDeshacer()));
-    hespecif->show();
-}
-
-void aShot::applyHespecif() {
-    //printf("eyy cambio hespecif");
-    imagenRect = hespecif->imagenAux;
-    updateAll();
-}
-
-void aShot::showNewDigit() {
-    digit = new Digitalizar(0, imagenRect);
-    imagenAnt = imagen;
-    connect(digit, SIGNAL(closed()), this, SLOT(applyDigit()));
-    digit->show();
-}
-
-void aShot::applyDigit() {
-    //imagen = digit->imagenAux;
-    addDeshacer();
-    imagenRect = digit->imagenAux;
-    updateAll();
-}
-
-void aShot::showNewDiferencia() {
-    diferencia = new Diferencia(0, imagenRect);
-    imagenAnt = imagen;
-    connect(diferencia, SIGNAL(changed()), this, SLOT(applyDiferencia()));
-    connect(diferencia, SIGNAL(acepted()), this, SLOT(addDeshacer()));
-    diferencia->show();
-}
-
-void aShot::applyDiferencia() {
-    imagenRect = diferencia->imagenAux;
-    updateAll();
-}
-
-
 void aShot::prueba() { //pintar negro en diagonal
     imagenAnt = imagen;
     addDeshacer();
@@ -649,7 +554,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionFMediana, SIGNAL(triggered()), this, SLOT(showNewFMediana()));
     connect(ui->actionFDif_Estadistica, SIGNAL(triggered()), this, SLOT(showNewFDifest()));
     connect(ui->actionFK_Vecinos, SIGNAL(triggered()), this, SLOT(showNewFVecinos()));
-
+    connect(ui->actionDefinirFiltro, SIGNAL(triggered()), this, SLOT(showNewFDef()));
 
     //Practica 3 y mas
 
@@ -743,6 +648,100 @@ void aShot::adjustScrollBar(QScrollBar *scrollBar, double factor) {
                             + ((factor - 1) * scrollBar->pageStep()/2)));
 }
 
+
+//slots de tratamiento para ventanitas de edicion de imagen
+void aShot::showNewHistograma() {
+    Histograma * histograma = new Histograma(0, imagenRect);
+    histograma->show();
+}
+
+void aShot::showNewPerfil() {
+    Perfil * perfil = new Perfil(0, imagenRect);
+    perfil->show();
+}
+
+void aShot::showNewBC() { //crea bc y lo muestra
+    bc = new BrilloContraste(0, imagenRect);
+    imagenAnt = imagen;
+    //this->bc = new BrilloContraste(this); //esto se hara una vez abierta la imagen
+    //connect(ui->actionBrillo_Contraste, SIGNAL(triggImpulsivoered()), this->bc, SLOT(show()));
+    connect(bc, SIGNAL(changed()), this, SLOT(applyBC()));
+    connect(bc, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    bc->show();
+}
+
+void aShot::applyBC() {
+    imagenRect = bc->imagenAux;
+    updateAll();
+}
+
+void aShot::showNewLogexp() {
+    logexp = new Logexp(0, imagenRect);
+    imagenAnt = imagen;
+    connect(logexp, SIGNAL(changed()), this, SLOT(applyLogexp()));
+    connect(logexp, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    logexp->show();
+}
+
+void aShot::applyLogexp() {
+    imagenRect = logexp->imagenAux;
+    updateAll();
+}
+
+void aShot::showNewTramos() {
+    tramos = new Tramos(0, imagenRect);
+    imagenAnt = imagen;
+    connect(tramos, SIGNAL(closed()), this, SLOT(applyDestroyTramos()));
+    tramos->show();
+}
+
+void aShot::applyDestroyTramos() {
+    addDeshacer();
+    imagenRect = tramos->imagenAux;
+    updateAll();
+    //delete tramos;
+}
+
+void aShot::showNewHespecif() {
+    hespecif = new Hespecif(0, imagenRect);
+    imagenAnt = imagen;
+    connect(hespecif, SIGNAL(changed()), this, SLOT(applyHespecif()));
+    connect(hespecif, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    hespecif->show();
+}
+
+void aShot::applyHespecif() {
+    //printf("eyy cambio hespecif");
+    imagenRect = hespecif->imagenAux;
+    updateAll();
+}
+
+void aShot::showNewDigit() {
+    digit = new Digitalizar(0, imagenRect);
+    imagenAnt = imagen;
+    connect(digit, SIGNAL(closed()), this, SLOT(applyDigit()));
+    digit->show();
+}
+
+void aShot::applyDigit() {
+    //imagen = digit->imagenAux;
+    addDeshacer();
+    imagenRect = digit->imagenAux;
+    updateAll();
+}
+
+void aShot::showNewDiferencia() {
+    diferencia = new Diferencia(0, imagenRect);
+    imagenAnt = imagen;
+    connect(diferencia, SIGNAL(changed()), this, SLOT(applyDiferencia()));
+    connect(diferencia, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    diferencia->show();
+}
+
+void aShot::applyDiferencia() {
+    imagenRect = diferencia->imagenAux;
+    updateAll();
+}
 
 
 //Practica 2:
@@ -849,6 +848,21 @@ void aShot::applyFVecinos() {
     imagenRect = fVecinos->imagenAux;
     updateAll();
 }
+
+void aShot::showNewFDef() {
+    fDef = new FDef(0, imagenRect);
+    imagenAnt = imagen;
+    connect(fDef, SIGNAL(changed()), this, SLOT(applyFDef()));
+    connect(fDef, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    fDef->show();
+}
+
+void aShot::applyFDef() {
+    imagenRect = fDef->imagenAux;
+    updateAll();
+}
+
+
 
 
 //Practica 3 y mas
