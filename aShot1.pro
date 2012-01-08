@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     Filtros/fmoda.cpp \
     Filtros/fmediana.cpp \
     Filtros/fdifest.cpp \
-    Filtros/fvecinos.cpp
+    Filtros/fvecinos.cpp \
+    Filtros/fdef.cpp
 
 HEADERS  += ashot.h \
     Ayuda/ayuda.h \
@@ -51,7 +52,8 @@ HEADERS  += ashot.h \
     Filtros/fmoda.h \
     Filtros/fmediana.h \
     Filtros/fdifest.h \
-    Filtros/fvecinos.h
+    Filtros/fvecinos.h \
+    Filtros/fdef.h
 
 FORMS    += ashot.ui \
     Ayuda/ayuda.ui \
@@ -71,10 +73,20 @@ FORMS    += ashot.ui \
     Filtros/fmoda.ui \
     Filtros/fmediana.ui \
     Filtros/fdifest.ui \
-    Filtros/fvecinos.ui
+    Filtros/fvecinos.ui \
+    Filtros/fdef.ui
 
 RESOURCES += \
     resources/aShotResources.qrc
+
+
+
+
+
+
+
+
+
 
 
 
