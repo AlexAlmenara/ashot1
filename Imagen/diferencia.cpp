@@ -1,6 +1,9 @@
 #include "diferencia.h"
 #include "ui_diferencia.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 Diferencia::Diferencia(QWidget *parent, Imagen image) :
     QWidget(parent),
     ui(new Ui::Diferencia)
@@ -123,9 +126,9 @@ void Diferencia::i1_cambios() {
     if (min > 0) CAMBIO = 0; //if (max < 255) CAMBIO = 255;
     i1.qimage.setColor(CAMBIO, qRgb(0, 255, 0));
 
-    for (int i = 0; i < i1.width(); i++)
-        for (int j = 0; j < i1.height(); j++)
-            if ((i1.gray(i, j) >= min) && (i1.gray(i, j) <= max)) //si este nivel de gris esta EN el rango no se marca (se pone un valor 0)
+    for (int i = 0; i < imagenAux.width(); i++)
+        for (int j = 0; j < imagenAux.height(); j++)
+            if ((imagenAux.gray(i, j) < min) || (imagenAux.gray(i, j) > max)) //si este nivel de gris esta EN el rango no se marca (se pone un valor 0)
                 i1.qimage.setPixel(i, j, CAMBIO); //los que estan dentro se pone 0, los que estan fuera (los de cambio) se dejan igual para mostrarlos
         i1.update();
 
@@ -148,9 +151,9 @@ void Diferencia::i2_cambios() {
     if (min > 0) CAMBIO = 0; //if (max < 255) CAMBIO = 255;
     i2.qimage.setColor(CAMBIO, qRgb(0, 255, 0));
 
-    for (int i = 0; i < i2.width(); i++)
-        for (int j = 0; j < i2.height(); j++)
-            if ((i2.gray(i, j) >= min) && (i2.gray(i, j) <= max)) //si este nivel de gris esta EN el rango no se marca (se pone un valor 0)
+    for (int i = 0; i < imagenAux.width(); i++)
+        for (int j = 0; j < imagenAux.height(); j++)
+            if ((imagenAux.gray(i, j) < min) || (imagenAux.gray(i, j) > max)) //si este nivel de gris esta EN el rango no se marca (se pone un valor 0)
                 i2.qimage.setPixel(i, j, 255); //los que estan dentro se pone 0, los que estan fuera (los de cambio) se dejan igual para mostrarlos
         i2.update();
 

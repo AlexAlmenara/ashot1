@@ -32,8 +32,12 @@ void Perfil::updatePunto() {
 }
 
 
-void Perfil::newFunction(double ymax) {
-    function = new Function(this, hist, 0, imagen.nDiagonal() - 1, 0, ymax); //por defecto histograma absoluto
+void Perfil::newFunction(double ymax, int modo) {
+    if (modo == Y_MODE)
+        function = new Function(this, hist, 0, imagen.nDiagonal() - 1, -ymax, ymax, modo); //para derivadas
+    else
+        function = new Function(this, hist, 0, imagen.nDiagonal() - 1, 0, ymax, modo); //para perfiles
+
     function->resize(400, 200);
     function->show();
     function->move(40, 20);
@@ -55,7 +59,7 @@ void Perfil::dperfil() {
     for (int i = 0; i < imagen.nDiagonal(); i++) //recorre la diagonal
         hist.insert(i, imagen.dperfil(i));
 
-    newFunction((double) imagen.M());
+    newFunction((double) imagen.M(), Y_MODE);
 }
 
 
@@ -73,7 +77,7 @@ void Perfil::dperfilSuave() {
     for (int i = 0; i < imagen.nDiagonal(); i++) //recorre la diagonal
         hist.insert(i, imagen.dperfilSuave(i));
 
-    newFunction((double) imagen.M());
+    newFunction((double) imagen.M(), Y_MODE);
 }
 
 

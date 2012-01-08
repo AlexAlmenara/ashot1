@@ -24,7 +24,7 @@ private:
     Function * function;
     Imagen imagen;
 
-    void newFunction(double ymax);
+    void newFunction(double ymax, int modo = SIMPLE_MODE);
 
 
 public slots:

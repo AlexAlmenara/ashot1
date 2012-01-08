@@ -1,5 +1,7 @@
 #include "hespecif.h"
 #include "ui_hespecif.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 Hespecif::Hespecif(QWidget *parent, Imagen image) :
     QWidget(parent),

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>465</width>
+    <height>322</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,10 +44,10 @@
    <widget class="QLabel" name="imageLabel">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>110</y>
-      <width>21</width>
-      <height>16</height>
+      <x>10</x>
+      <y>10</y>
+      <width>62</width>
+      <height>17</height>
      </rect>
     </property>
     <property name="text">
@@ -60,7 +60,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>465</width>
      <height>23</height>
     </rect>
    </property>
@@ -68,7 +68,6 @@
     <property name="title">
      <string>&amp;Archivo</string>
     </property>
-    <addaction name="separator"/>
     <addaction name="action_Abrir"/>
     <addaction name="separator"/>
     <addaction name="action_Guardar"/>
@@ -123,7 +122,6 @@
     </widget>
     <addaction name="menuSuavizado"/>
     <addaction name="actionDefinirFiltro"/>
-    <addaction name="actionUsarFiltroDefinido"/>
     <addaction name="menuRuidos"/>
    </widget>
    <widget class="QMenu" name="menu_Imagen">
@@ -144,7 +142,29 @@
      <addaction name="actionDigitalizar"/>
      <addaction name="actionDiferencia"/>
     </widget>
+    <widget class="QMenu" name="menuTransform_geometricas">
+     <property name="title">
+      <string>Transform. geométricas</string>
+     </property>
+     <widget class="QMenu" name="menuRotacion">
+      <property name="title">
+       <string>Rotación</string>
+      </property>
+      <addaction name="action90"/>
+      <addaction name="action270"/>
+      <addaction name="action180"/>
+      <addaction name="actionArbitrario"/>
+     </widget>
+     <addaction name="actionEspejo_vertical"/>
+     <addaction name="actionEspejo_horizontal"/>
+     <addaction name="actionTraspuesta"/>
+     <addaction name="menuRotacion"/>
+     <addaction name="actionEscalado"/>
+    </widget>
     <addaction name="menuAjustes"/>
+    <addaction name="menuTransform_geometricas"/>
+    <addaction name="separator"/>
+    <addaction name="actionRecortar"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
@@ -156,10 +176,19 @@
     <addaction name="action_Histograma"/>
     <addaction name="actionPerfil"/>
    </widget>
+   <widget class="QMenu" name="menuHerramientas">
+    <property name="title">
+     <string>&amp;Herramientas</string>
+    </property>
+    <addaction name="actionCursor"/>
+    <addaction name="actionSeleccion"/>
+    <addaction name="actionPincel"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_Imagen"/>
    <addaction name="menuFiltros"/>
+   <addaction name="menuHerramientas"/>
    <addaction name="menuAyuda"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -174,6 +203,26 @@
    <addaction name="action_Guardar"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>17</width>
+     <height>17</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>LeftToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionCursor"/>
+   <addaction name="actionSeleccion"/>
+   <addaction name="actionPincel"/>
+  </widget>
   <action name="action_Abrir">
    <property name="icon">
     <iconset resource="resources/aShotResources.qrc">
@@ -390,12 +439,7 @@
   </action>
   <action name="actionDefinirFiltro">
    <property name="text">
-    <string>Definir...</string>
-   </property>
-  </action>
-  <action name="actionUsarFiltroDefinido">
-   <property name="text">
-    <string>Usar definido</string>
+    <string>Definir filtro</string>
    </property>
   </action>
   <action name="actionFMedia">
@@ -426,6 +470,87 @@
   <action name="actionFGuassiano">
    <property name="text">
     <string>Guassiano</string>
+   </property>
+  </action>
+  <action name="actionRecortar">
+   <property name="text">
+    <string>Recortar</string>
+   </property>
+  </action>
+  <action name="actionEspejo_vertical">
+   <property name="text">
+    <string>Espejo vertical</string>
+   </property>
+  </action>
+  <action name="actionEspejo_horizontal">
+   <property name="text">
+    <string>Espejo horizontal</string>
+   </property>
+  </action>
+  <action name="actionTraspuesta">
+   <property name="text">
+    <string>Traspuesta</string>
+   </property>
+  </action>
+  <action name="action90">
+   <property name="text">
+    <string>90º AC</string>
+   </property>
+  </action>
+  <action name="action180">
+   <property name="text">
+    <string>180º</string>
+   </property>
+  </action>
+  <action name="action270">
+   <property name="text">
+    <string>90º ACD (270º)</string>
+   </property>
+  </action>
+  <action name="actionEscalado">
+   <property name="text">
+    <string>Escalado</string>
+   </property>
+  </action>
+  <action name="actionArbitrario">
+   <property name="text">
+    <string>Arbitrario</string>
+   </property>
+  </action>
+  <action name="actionCursor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/aShotResources.qrc">
+     <normaloff>:/cursor-icon.png</normaloff>:/cursor-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cursor</string>
+   </property>
+  </action>
+  <action name="actionSeleccion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/aShotResources.qrc">
+     <normaloff>:/selection-select-icon.png</normaloff>:/selection-select-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Selección</string>
+   </property>
+  </action>
+  <action name="actionPincel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/aShotResources.qrc">
+     <normaloff>:/Brush-icon.png</normaloff>:/Brush-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pincel</string>
    </property>
   </action>
  </widget>

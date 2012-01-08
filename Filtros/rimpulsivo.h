@@ -2,6 +2,7 @@
 #define RIMPULSIVO_H
 
 #include <QWidget>
+#include <QtGui>
 #include "imagen.h"
 #include "Imagen/histograma.h"
 

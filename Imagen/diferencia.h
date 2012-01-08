@@ -2,9 +2,8 @@
 #define DIFERENCIA_H
 
 #include <QWidget>
+#include <QtGui>
 #include "Imagen/histograma.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 namespace Ui {
     class Diferencia;

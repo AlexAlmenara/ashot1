@@ -1,12 +1,15 @@
 #include "function.h"
 #include "ui_function.h"
 
-Function::Function(QWidget *parent, QVector<double> func, double x_min, double x_max, double y_min, double y_max) :
-    QWidget(parent)
-    //ui(new Ui::Function)
-{
-    //ui->setupUi(this);
+#include <QBrush>
+#include <QPen>
+#include <QPainter>
+#include <QtGui>
+#include <stdio.h>
 
+Function::Function(QWidget *parent, QVector<double> func, double x_min, double x_max, double y_min, double y_max, int mode) :
+    QWidget(parent)
+{
     setMinimumSize(256, 256);
     resize(500, 256);
     setBackgroundRole(QPalette::Base);
@@ -17,14 +20,14 @@ Function::Function(QWidget *parent, QVector<double> func, double x_min, double x
     this->xmax = x_max;
     this->ymin = y_min;
     this->ymax = y_max;
-
+    modo = mode;
 }
 
 Function::~Function()
-{
-    //delete ui;
-}
+{ }
 
+
+//atencion: para terminar de generalizar falta poner casos X_MODE y TOTAL_MODE
 
 double Function::getX() {
     return xMouse;
@@ -37,11 +40,21 @@ double Function::getY() {
 void Function::paintEvent(QPaintEvent * /* event */) {
 
     QPainter painter(this);
-    QPen pen = QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); //    pen.setBrush(Qt::blue);
-
-    painter.setPen(pen);
     painter.scale(1.0, -1.0); //invierte y
-    painter.translate(0.0, (double) -height()); //el (0, 0) esta abajo como solemos ver en funciones
+
+    switch (modo) {
+    case SIMPLE_MODE:
+        painter.translate(0.0, (double) -height()); //el (0, 0) esta abajo como solemos ver en funciones
+        break;
+
+    case Y_MODE:
+        painter.translate(0.0, (double) (-height() / 2.0)); // (0, 0) en medio
+        painter.drawLine(0.0, 0.0, width(), 0.0);
+        break;
+    }
+
+    QPen pen = QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin); //    pen.setBrush(Qt::blue);
+    painter.setPen(pen);
 
     double xdist = (double) this->width() / (xmax - xmin); //incremento de x //cuidado con conversiones
     double ydist = (double) this->height() / (ymax - ymin); //incremento de y
@@ -76,7 +89,6 @@ void Function::mouseMoveEvent(QMouseEvent* event) {
         yMouse = fun.at(vin);
         emit(moused());
     }
-    //printf("\n(%d, %d)", posMouse.x(), posMouse.y());
 }
 
 

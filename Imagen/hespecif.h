@@ -2,10 +2,9 @@
 #define HESPECIF_H
 
 #include <QWidget>
+#include <QtGui>
 #include "imagen.h"
 #include "Imagen/histograma.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 namespace Ui {
     class Hespecif;
