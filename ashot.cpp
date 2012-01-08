@@ -855,14 +855,13 @@ void aShot::showNewFDef() {
     connect(fDef, SIGNAL(changed()), this, SLOT(applyFDef()));
     connect(fDef, SIGNAL(acepted()), this, SLOT(addDeshacer()));
     fDef->show();
+
 }
 
 void aShot::applyFDef() {
     imagenRect = fDef->imagenAux;
     updateAll();
 }
-
-
 
 
 //Practica 3 y mas

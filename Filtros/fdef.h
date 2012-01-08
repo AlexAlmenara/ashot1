@@ -23,10 +23,15 @@ private:
     Ui::FDef *ui;
 
     Imagen imagenOrig; //imagen de partida
-    QSpinBox ** ventana;
+    QSpinBox ** ventana; //kernel del filtro
 
     QHBoxLayout * boxFilas; //horizontal layout para cada fila de la ventana
     QVBoxLayout boxVentana; //layout para toda la ventana
+
+    bool firstPainted;
+    int N;
+    void quitarVentana();
+    void initVentana();
 
 public slots:
     void crearVentana();
