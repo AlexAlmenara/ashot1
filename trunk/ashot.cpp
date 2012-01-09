@@ -555,6 +555,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionFDif_Estadistica, SIGNAL(triggered()), this, SLOT(showNewFDifest()));
     connect(ui->actionFK_Vecinos, SIGNAL(triggered()), this, SLOT(showNewFVecinos()));
     connect(ui->actionDefinirFiltro, SIGNAL(triggered()), this, SLOT(showNewFDef()));
+    connect(ui->actionFGuassiano, SIGNAL(triggered()), this, SLOT(showNewFGauss()));
 
     //Practica 3 y mas
 
@@ -860,6 +861,19 @@ void aShot::showNewFDef() {
 
 void aShot::applyFDef() {
     imagenRect = fDef->imagenAux;
+    updateAll();
+}
+
+void aShot::showNewFGauss() {
+    fGauss = new FGauss(0, imagenRect);
+    imagenAnt = imagen;
+    connect(fGauss, SIGNAL(changed()), this, SLOT(applyFGauss()));
+    connect(fGauss, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    fGauss->show();
+}
+
+void aShot::applyFGauss() {
+    imagenRect = fGauss->imagenAux;
     updateAll();
 }
 
