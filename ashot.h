@@ -29,6 +29,7 @@
 #include "Filtros/fdifest.h"
 #include "Filtros/fvecinos.h"
 #include "Filtros/fdef.h"
+#include "Filtros/fgauss.h"
 
 
 //herramientas
@@ -94,6 +95,7 @@ private:
     FDifest * fDifest;
     FVecinos * fVecinos;
     FDef * fDef;
+    FGauss * fGauss;
 
 
     //Practica 3 y mas
@@ -186,6 +188,8 @@ public slots:
     void applyFVecinos();
     void showNewFDef();
     void applyFDef();
+    void showNewFGauss();
+    void applyFGauss();
 
 
     //Practica 3 y mas
