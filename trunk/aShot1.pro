@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     Filtros/fvecinos.cpp \
     Filtros/fdef.cpp \
     Filtros/fgauss.cpp \
-    Geometricas/escalado.cpp
+    Geometricas/escalado.cpp \
+    Geometricas/rotacion.cpp
 
 HEADERS  += ashot.h \
     Ayuda/ayuda.h \
@@ -57,7 +58,8 @@ HEADERS  += ashot.h \
     Filtros/fvecinos.h \
     Filtros/fdef.h \
     Filtros/fgauss.h \
-    Geometricas/escalado.h
+    Geometricas/escalado.h \
+    Geometricas/rotacion.h
 
 FORMS    += ashot.ui \
     Ayuda/ayuda.ui \
@@ -80,10 +82,14 @@ FORMS    += ashot.ui \
     Filtros/fvecinos.ui \
     Filtros/fdef.ui \
     Filtros/fgauss.ui \
-    Geometricas/escalado.ui
+    Geometricas/escalado.ui \
+    Geometricas/rotacion.ui
 
 RESOURCES += \
     resources/aShotResources.qrc
+
+
+
 
 
 

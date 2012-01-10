@@ -153,7 +153,7 @@
       <addaction name="action90"/>
       <addaction name="action270"/>
       <addaction name="action180"/>
-      <addaction name="actionArbitrario"/>
+      <addaction name="actionRotacion"/>
      </widget>
      <addaction name="actionEspejo_vertical"/>
      <addaction name="actionEspejo_horizontal"/>
@@ -512,7 +512,7 @@
     <string>Escalado</string>
    </property>
   </action>
-  <action name="actionArbitrario">
+  <action name="actionRotacion">
    <property name="text">
     <string>Arbitrario</string>
    </property>
