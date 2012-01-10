@@ -33,6 +33,7 @@
 
 //Practica 3:
 #include "Geometricas/escalado.h"
+#include "Geometricas/rotacion.h"
 
 //herramientas
 #define H_CURSOR 0
@@ -100,6 +101,7 @@ private:
 
     //Practica 3: transformaciones geometricas
     Escalado * escalado;
+    Rotacion * rotacion;
 
     int herramienta;
 
@@ -207,6 +209,8 @@ public slots:
 
     void showNewEscalado();
     void applyEscalado();
+    void showNewRotacion();
+    void applyRotacion();
 };
 
 #endif // ASHOT_H

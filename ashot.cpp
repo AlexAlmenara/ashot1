@@ -37,7 +37,7 @@ aShot::aShot(QWidget *parent) :
 
     connectActions();
     enableActions(false);
-    //abrir(); //para acelerar la depuracion
+    abrir(); //para acelerar la depuracion
 }
 
 aShot::~aShot() {
@@ -576,6 +576,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->action180, SIGNAL(triggered()), this, SLOT(rotar180()));
     connect(ui->action270, SIGNAL(triggered()), this, SLOT(rotar270()));
     connect(ui->actionEscalado, SIGNAL(triggered()), this, SLOT(showNewEscalado()));
+    connect(ui->actionRotacion, SIGNAL(triggered()), this, SLOT(showNewRotacion()));
 }
 
 void aShot::enableActions(bool b) {
@@ -1025,6 +1026,25 @@ void aShot::showNewEscalado() {
 
 void aShot::applyEscalado() {
     imagenRect = escalado->imagenAux;
+
+    if (herramienta == H_SELECCION)
+        updateAll(); //pega la imagen
+    else {
+        imagen = imagenRect;
+        updateImageLabel();
+    }
+}
+
+void aShot::showNewRotacion() {
+    rotacion = new Rotacion(0, imagenRect);
+    imagenAnt = imagen;
+    connect(rotacion, SIGNAL(changed()), this, SLOT(applyRotacion()));
+    connect(rotacion, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    rotacion->show();
+}
+
+void aShot::applyRotacion() {
+    imagenRect = rotacion->imagenAux;
 
     if (herramienta == H_SELECCION)
         updateAll(); //pega la imagen
