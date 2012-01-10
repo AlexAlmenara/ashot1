@@ -536,7 +536,7 @@ bool Imagen::esTransp(int i, int j) {
 
 void Imagen::rotar90() {
     Imagen irot = Imagen( QImage(this->height(), this->width(), QImage::Format_Indexed8),
-                           this->fileName());
+                           this->path());
 
     irot.qimage.setColorTable(this->qimage.colorTable());
 
