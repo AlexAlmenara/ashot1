@@ -28,7 +28,8 @@ aShot::aShot(QWidget *parent) :
     ui->scrollArea->setWidget(ui->imageLabel);
     setCentralWidget(ui->scrollArea);
     //setWindowTitle(tr("aShot 1.0")); //se hace tambien con Qt Designer
-    resize(600, 500);
+    setMinimumSize(500, 400);
+    resize(500, 400);
 
     hasImage = false;
     undo = QStack<Imagen>();
@@ -36,7 +37,7 @@ aShot::aShot(QWidget *parent) :
 
     connectActions();
     enableActions(false);
-    abrir(); //para acelerar la depuracion
+    //abrir(); //para acelerar la depuracion
 }
 
 aShot::~aShot() {
@@ -206,6 +207,7 @@ void aShot::abrir() {
 
         resize(imagen.width() + 50, imagen.height() + 100); //+ las barras etc
         enableActions(true);
+        ui->actionRecortar->setEnabled(false); //empieza en false hasta que se use herramienta seleccion
         updateZoomActions();
         updateImageLabel();
         hasImage = true;
@@ -532,6 +534,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->actionEcualizar, SIGNAL(triggered()), this, SLOT(ecualizar()));
     connect(ui->action_Histograma, SIGNAL(triggered()), this, SLOT(showNewHistograma()));
     connect(ui->actionPerfil, SIGNAL(triggered()), this, SLOT(showNewPerfil()));
+    connect(ui->actionRecortar, SIGNAL(triggered()), this, SLOT(recortar()));
 
     connect(ui->actionDeshacer, SIGNAL(triggered()), this, SLOT(deshacer()));
     connect(ui->actionRehacer, SIGNAL(triggered()), this, SLOT(rehacer()));
@@ -572,6 +575,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->action90, SIGNAL(triggered()), this, SLOT(rotar90()));
     connect(ui->action180, SIGNAL(triggered()), this, SLOT(rotar180()));
     connect(ui->action270, SIGNAL(triggered()), this, SLOT(rotar270()));
+    connect(ui->actionEscalado, SIGNAL(triggered()), this, SLOT(showNewEscalado()));
 }
 
 void aShot::enableActions(bool b) {
@@ -885,18 +889,21 @@ void aShot::selectHerramienta() {
         ui->actionPincel->setChecked(false);
         ui->actionSeleccion->setChecked(false);
         herramienta = H_CURSOR;
+        ui->actionRecortar->setEnabled(false);
     }
     else
     if ((ui->actionSeleccion->isChecked()) && (herramienta != H_SELECCION)) {
         ui->actionPincel->setChecked(false);
         ui->actionCursor->setChecked(false);
         herramienta = H_SELECCION;
+        ui->actionRecortar->setEnabled(true);
     }
     else
     if ((ui->actionPincel->isChecked()) && (herramienta != H_PINCEL)) {
         ui->actionCursor->setChecked(false);
         ui->actionSeleccion->setChecked(false);
         herramienta = H_PINCEL;
+        ui->actionRecortar->setEnabled(false);
     }
 
     //y ademas reiniciamos los puntos
@@ -906,6 +913,12 @@ void aShot::selectHerramienta() {
     imagenRect = imagen;
 }
 
+void aShot::recortar() {
+    imagen = imagenRect;
+    p1 = QPoint(0, 0); //la region de seleccion es toda la imagen
+    p2 = QPoint(imagen.width() - 1, imagen.height() - 1);
+    updateImageLabel();
+}
 
 void aShot::espejoVertical() {
     imagenAnt = imagen;
@@ -956,7 +969,7 @@ void aShot::traspuesta() {
 
     //inicio
     Imagen trasp = Imagen( QImage(imagenRect.height(), imagenRect.width(), QImage::Format_Indexed8),
-                           imagenRect.fileName());
+                           imagenRect.path());
 
     trasp.qimage.setColorTable(imagenRect.qimage.colorTable());
 
@@ -1000,3 +1013,24 @@ void aShot::rotar270() {
 
     updateAll();
 }
+
+
+void aShot::showNewEscalado() {
+    escalado = new Escalado(0, imagenRect);
+    imagenAnt = imagen;
+    connect(escalado, SIGNAL(changed()), this, SLOT(applyEscalado()));
+    connect(escalado, SIGNAL(acepted()), this, SLOT(addDeshacer()));
+    escalado->show();
+}
+
+void aShot::applyEscalado() {
+    imagenRect = escalado->imagenAux;
+
+    if (herramienta == H_SELECCION)
+        updateAll(); //pega la imagen
+    else {
+        imagen = imagenRect;
+        updateImageLabel();
+    }
+}
+

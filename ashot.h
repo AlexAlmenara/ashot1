@@ -31,13 +31,13 @@
 #include "Filtros/fdef.h"
 #include "Filtros/fgauss.h"
 
+//Practica 3:
+#include "Geometricas/escalado.h"
 
 //herramientas
 #define H_CURSOR 0
 #define H_SELECCION 1
 #define H_PINCEL 2
-
-
 
 
 namespace Ui {
@@ -98,7 +98,9 @@ private:
     FGauss * fGauss;
 
 
-    //Practica 3 y mas
+    //Practica 3: transformaciones geometricas
+    Escalado * escalado;
+
     int herramienta;
 
 #ifndef QT_NO_PRINTER
@@ -139,6 +141,7 @@ public slots:
     void guardarComo();
     void toGray(); //convierte imagen a escala de grises. DOS COSAS: una para convertir formato de imagen, y otra blanco/negro de imagenRect
     void negativo(); //convierte imagen a negativo
+    void recortar();
 
     void addDeshacer();
     void deshacer();
@@ -201,6 +204,9 @@ public slots:
     void rotar90();
     void rotar180();
     void rotar270();
+
+    void showNewEscalado();
+    void applyEscalado();
 };
 
 #endif // ASHOT_H

@@ -5,7 +5,7 @@
 #include "math.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
+//#include <iostream>
 
 FGauss::FGauss(QWidget *parent, Imagen image) :
     QWidget(parent),
