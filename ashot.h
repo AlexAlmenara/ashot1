@@ -144,6 +144,7 @@ public slots:
     void toGray(); //convierte imagen a escala de grises. DOS COSAS: una para convertir formato de imagen, y otra blanco/negro de imagenRect
     void negativo(); //convierte imagen a negativo
     void recortar();
+    void aplanar();
 
     void addDeshacer();
     void deshacer();
