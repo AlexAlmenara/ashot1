@@ -459,6 +459,7 @@ void aShot::prueba() { //pintar negro en diagonal
     /*Imagen im = Imagen();
     if (im.isNull())
         printf("\nes nulllll");*/
+    printf("\ncos(90º) = %f", cos(90)); //0.00.. (math.h USA RADIANES!!!)
 
     /*QVector<QRgb> tabla = imagenRect.qimage.colorTable();
     tabla.append(QColor(255, 255, 255, 0).rgba());
@@ -466,6 +467,7 @@ void aShot::prueba() { //pintar negro en diagonal
     imagenRect.qimage.setColorTable(tabla);
     for (int i = 0; i < imagenRect.width(); i++)
     imagenRect.qimage.setPixel(i, 30, 256); //no da error, pero asi no escribe el nivel nuevo 256 sino el 0 */
+
 
     updateAll();  //actualiza label
 }
@@ -535,6 +537,7 @@ void aShot::connectActions() {   //conecta acciones. las que haga falta una imag
     connect(ui->action_Histograma, SIGNAL(triggered()), this, SLOT(showNewHistograma()));
     connect(ui->actionPerfil, SIGNAL(triggered()), this, SLOT(showNewPerfil()));
     connect(ui->actionRecortar, SIGNAL(triggered()), this, SLOT(recortar()));
+    connect(ui->actionAplanar_imagen, SIGNAL(triggered()), this, SLOT(aplanar()));
 
     connect(ui->actionDeshacer, SIGNAL(triggered()), this, SLOT(deshacer()));
     connect(ui->actionRehacer, SIGNAL(triggered()), this, SLOT(rehacer()));
@@ -915,10 +918,21 @@ void aShot::selectHerramienta() {
 }
 
 void aShot::recortar() {
+    imagenAnt = imagen;
+    addDeshacer();
+
     imagen = imagenRect;
     p1 = QPoint(0, 0); //la region de seleccion es toda la imagen
     p2 = QPoint(imagen.width() - 1, imagen.height() - 1);
     updateImageLabel();
+}
+
+void aShot::aplanar() {
+    imagenAnt = imagen;
+    addDeshacer();
+
+    imagenRect.aplanar();
+    updateAll();
 }
 
 void aShot::espejoVertical() {

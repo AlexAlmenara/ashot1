@@ -165,6 +165,7 @@
     <addaction name="menuTransform_geometricas"/>
     <addaction name="separator"/>
     <addaction name="actionRecortar"/>
+    <addaction name="actionAplanar_imagen"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
@@ -551,6 +552,11 @@
    </property>
    <property name="text">
     <string>Pincel</string>
+   </property>
+  </action>
+  <action name="actionAplanar_imagen">
+   <property name="text">
+    <string>Aplanar imagen</string>
    </property>
   </action>
  </widget>
