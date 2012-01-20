@@ -17,6 +17,11 @@ using namespace std;
 #define VMP 0  //indices de ui->comboxBoxInterpolacion
 #define BILINEAL 1
 
+
+#define DIRECTA 0 //indices de ui->comboBoxTransf
+#define INDIRECTA 1
+
+
 //clase de punto (x, y) de double
 class FPoint {
     double x;

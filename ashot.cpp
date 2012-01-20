@@ -37,7 +37,7 @@ aShot::aShot(QWidget *parent) :
 
     connectActions();
     enableActions(false);
-    abrir(); //para acelerar la depuracion
+    //abrir(); //para acelerar la depuracion
 }
 
 aShot::~aShot() {
@@ -197,7 +197,7 @@ void aShot::cerrarTodo() {
 }
 
 void aShot::abrir() {
-    QString fileName = "/home/alex/Escritorio/doutzen.tif"; //QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //"
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Abrir archivo"), QDir::currentPath()); //"/home/alex/Escritorio/doutzen.tif";
     if (!fileName.isEmpty()) {
         imagen = Imagen(fileName);
         if (imagen.isNull()) {
@@ -304,11 +304,13 @@ void aShot::anteriorImagen() { //solo se ejecutara si undo tiene algo
     labelAnt.setPixmap(QPixmap::fromImage(undo.top().qimage));
     labelAnt.show();
     labelAnt.move(this->x() + 600, this->y());
+    labelAnt.setWindowTitle("Anterior imagen " + undo.top().fileName());
 }
 
 void aShot::anteriorHistograma() { //solo se ejecutara si undo tiene algo
     Histograma * hist = new Histograma(0, undo.top());
     hist->show();
+    hist->setWindowTitle("Anterior histograma de " + undo.top().fileName());
 }
 
 void aShot::info_imagen() {
@@ -1052,12 +1054,16 @@ void aShot::applyEscalado() {
 void aShot::showNewRotacion() {
     rotacion = new Rotacion(0, imagenRect);
     imagenAnt = imagen;
+    //addDeshacer();
     connect(rotacion, SIGNAL(changed()), this, SLOT(applyRotacion()));
     connect(rotacion, SIGNAL(acepted()), this, SLOT(addDeshacer()));
     rotacion->show();
 }
 
 void aShot::applyRotacion() {
+    imagen = imagenAnt; //para limpiar los transparentes que hayan quedado
+    imagen.initFondo();
+
     imagenRect = rotacion->imagenAux;
 
     if (herramienta == H_SELECCION)

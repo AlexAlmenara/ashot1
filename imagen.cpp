@@ -136,8 +136,10 @@ void Imagen::transformar(int * vout) {
 
 void Imagen::setQImage(QImage image) {
     qimage = image;
+    //firstCreated = false; //es como si fuera un constructor
     initFondo();
     update();
+    //firstCreated = true;
     //cuidado no se ha puesto el nombre de la imagen
 }
 
@@ -162,8 +164,10 @@ void Imagen::pegarImagen(Imagen image, QPoint p1) {
             vin = qGray(image.qimage.pixel(i, j));
             x = p1.x() + i;
             y = p1.y() + j;
-            if ((x < this->qimage.width()) && (y < this->qimage.height())) //si no se sale de la imagen original
+            if ((x < this->qimage.width()) && (y < this->qimage.height())) { //si no se sale de la imagen original
                 this->qimage.setPixel(x, y, vin);
+                this->setPosFondo(x, y, image.posFondo(i, j));
+            }
         }
 
     update();
@@ -491,13 +495,16 @@ int Imagen::moda(int x1, int y1, int x2, int y2) {
 
 
 //Practica 3:
-void Imagen::initFondo() {
+void Imagen::initFondo() { //lo pone todo opaco (tambien aplana imagen)
     //cout << "init fondo\n width = " << width() << ", height = " << height() << flush;
     fondo = new int * [width()]; //creacion de matriz de ruido. fuente: http://c.conclase.net/curso/?cap=017
     for (int i = 0; i < width(); i++) {
         fondo[i] = new int[height()];
-        for (int j = 0; j < height(); j++)
+        for (int j = 0; j < height(); j++) {
+            //if ((esTransp(i, j)) && (firstCreated)) //si ya habia algun transparente lo aplana
+              //  qimage.setPixel(i, j, COLOR_APLANADO);
             fondo[i][j] = OPACO; //por defecto todos los pixeles se consideran de la imagen, para mostrar en histograma
+        }
     }
    // createHist();
 }
@@ -518,14 +525,21 @@ void Imagen::setPosFondo(int i, int j, int valor) {
 }
 
 
+int Imagen::posFondo(int i, int j) {
+    return fondo[i][j];
+}
+
+
 void Imagen::aplanar() {
     //delete [] fondo;
     //createHist();
     for (int i = 0; i < width(); i++)
         for (int j = 0; j < height(); j++)
-            if (esTransp(i, j))
+            if (esTransp(i, j)) {
+                setPosFondo(i, j, OPACO);
                 qimage.setPixel(i, j, COLOR_APLANADO);
-    initFondo();
+            }
+    //initFondo();
     createHist();
 }
 

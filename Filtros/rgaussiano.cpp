@@ -57,7 +57,7 @@ void RGaussiano::setValues(Imagen image) {
     ui->spinBoxN2->setValue(50);
 
     ui->doubleSpinBoxMedia->setRange(-(double) (imagenOriginal.M() - 1), (double) (imagenOriginal.M() - 1));
-    ui->doubleSpinBoxMedia->setValue(20);
+    ui->doubleSpinBoxMedia->setValue(0); //por defecto
     ui->doubleSpinBoxDesv->setRange(0.0, ((double) imagenOriginal.M() / 2.0));
     ui->doubleSpinBoxDesv->setValue(5);
 }

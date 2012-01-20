@@ -27,8 +27,7 @@ private:
     //int xmin, xmax; //rango de valores de gris. Por defecto: [0..255]
     int hmax; //maxima frecuencia absoluta: max eje y
 
-    //int maxh; //por si el usuario quiere especificar una escala diferente en y (puede pasar que no se vea bien
-    //bool firstPainted;
+    bool firstPainted;
 
     void newFunction(double ymax);
 
