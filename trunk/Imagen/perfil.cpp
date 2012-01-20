@@ -16,8 +16,10 @@ Perfil::Perfil(QWidget *parent, Imagen imagen) :
     connect(ui->radioButtonPerfilSuave, SIGNAL(clicked()), this, SLOT(perfilSuave()));
     connect(ui->radioButtondPerfilSuave, SIGNAL(clicked()), this, SLOT(dperfilSuave()));
     ui->radioButtonPerfil->setChecked(true); //empieza por defecto perfil normal
-    perfil();
 
+    firstPainted = false;
+    perfil();
+    firstPainted = true;
 }
 
 Perfil::~Perfil()
@@ -33,14 +35,18 @@ void Perfil::updatePunto() {
 
 
 void Perfil::newFunction(double ymax, int modo) {
+    if (firstPainted) {
+        function->hide();
+        ui->hLayoutFunction->removeWidget(function);
+    }
+
     if (modo == Y_MODE)
         function = new Function(this, hist, 0, imagen.nDiagonal() - 1, -ymax, ymax, modo); //para derivadas
     else
         function = new Function(this, hist, 0, imagen.nDiagonal() - 1, 0, ymax, modo); //para perfiles
 
-    function->resize(400, 200);
     function->show();
-    function->move(40, 20);
+    ui->hLayoutFunction->addWidget(function);
     connect(function, SIGNAL(moused()), this, SLOT(updatePunto()));
 }
 

@@ -110,6 +110,7 @@ void FDef::initVentana() {
     }
 
     resize(N + 200, N + 200);
+    ui->dSpinBoxNorm->setValue(1.0 / (double) (N*N)); //por defecto
 
     boxFilas = new QHBoxLayout [N];
     ventana = new QSpinBox * [N]; //creacion de matriz de ruido. fuente: http://c.conclase.net/curso/?cap=017

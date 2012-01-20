@@ -29,8 +29,9 @@ private:
 
     int ** fondo; //matriz para decir que pixels son fondo, para no mostrar en histograma
 
+    //bool firstCreated; //para controlar el initFondo() bien
+
     void createHist();
-    void initFondo(); //inicializa fondo
 
 public:
     Imagen(QString fileName = "");
@@ -94,8 +95,10 @@ public:
     int moda(int x1, int y1, int x2, int y2);
 
     //pract3:
+    void initFondo(); //inicializa fondo
     void setFondo(int ** fo); //crea una nueva matriz de fondo
     void setPosFondo(int i, int j, int valor); //pone valor en posicion de matriz de fondo
+    int posFondo(int i, int j); //devuelve valor de posicion matriz de fondo
     void aplanar(); //vacia matriz de fondo, todos los pixeles se consideran de la imagen para mostrar
     bool esTransp(int i, int j); //true si pixel es transparente
 

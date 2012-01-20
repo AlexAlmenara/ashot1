@@ -24,6 +24,8 @@ private:
     Function * function;
     Imagen imagen;
 
+    bool firstPainted;
+
     void newFunction(double ymax, int modo = SIMPLE_MODE);
 
 

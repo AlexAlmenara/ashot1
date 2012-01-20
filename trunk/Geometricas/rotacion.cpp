@@ -31,6 +31,7 @@ Rotacion::Rotacion(QWidget *parent, Imagen imagen) :
     ui->hSliderAngulo->setValue(0);
 
     ui->comboBoxInterpolacion->setCurrentIndex(BILINEAL);
+    ui->comboBoxTransf->setCurrentIndex(INDIRECTA);
 
     //conexiones
     connect(ui->ButtonCancelar, SIGNAL(clicked()), this, SLOT(cancelar()));
@@ -44,6 +45,7 @@ Rotacion::Rotacion(QWidget *parent, Imagen imagen) :
 
     connect(ui->dSpinBoxAngulo, SIGNAL(valueChanged(double)), this, SLOT(cambiarImagen()));
     connect(ui->comboBoxInterpolacion, SIGNAL(currentIndexChanged(int)), this, SLOT(cambiarImagen()));
+    connect(ui->comboBoxTransf, SIGNAL(currentIndexChanged(int)), this, SLOT(cambiarImagen()));
 }
 
 Rotacion::~Rotacion()
@@ -81,24 +83,9 @@ FPoint Rotacion::firstTD(int x, int y) {
 FPoint Rotacion::tD(int x, int y) { //transformacion directa: (x, y) de imagenOrig, devuelve (xp, yp) de imagen rotada
     FPoint p = firstTD(x, y);
 
-    //cambio de ejes de coordenadas:
-    if ( ((ang >= 0) && (ang <= R90)) || ((ang >= -R360) && (ang <= -R270)) )
-        p.setX(p.getX() - Hp.getX());
-    else
-        if ( ((ang >= R90) && (ang <= R180)) || ((ang >= -R270) && (ang <= -R180)) ) {
-            p.setX(p.getX() - Gp.getX());
-            p.setY(p.getY() - Hp.getY());
-        }
-        else
-            if ( ((ang >= R180) && (ang <= R270)) || ((ang >= -R180) && (ang <= -R90)) ) {
-                p.setX(p.getX() - Fp.getX());
-                p.setY(p.getY() - Gp.getY());
-            }
-            else {
-                //if ( ((ang >= 270) && (ang <= 360)) || ((ang >= -90) && (ang <= 0)) ) //comentado para recordar
-                p.setY(p.getY() - Fp.getY());
-            }
-
+    //mover el eje de coordenadas para que se quede la imagen dentro del paralelogramo
+    p.setX(p.getX() + Ep.getX() - 1);
+    p.setY(p.getY() + Ep.getY() - 1);
     return p;
 }
 
@@ -121,7 +108,7 @@ FPoint Rotacion::firstTI(int xp, int yp) {
 FPoint Rotacion::tI(int xp, int yp) { //transformacion indirecta: (xp, yp) de imagen rotada, devuelve (x, y) de imagenOrig
     FPoint p(xp, yp);
 
-    //cambio de ejes de coordenadas:
+    //deshacer el movimiento del eje de coordenadas (Ver tD()): asi se sale del paralelogramo
     p.setX(p.getX() - Ep.getX());
     p.setY(p.getY() - Ep.getY());
 
@@ -219,75 +206,104 @@ void Rotacion::cambiarImagen() {
 
     initRotacion(); //crea la imagenAux (paralelogramo)
 
-    for (int Xp = 0; Xp < imagenAux.width(); Xp++) // reocorre la imagen rotada (mapeado inverso)
-        for (int Yp = 0; Yp < imagenAux.height(); Yp++) { // (X', Y')
-            FPoint xy = tI(Xp, Yp); //transformacion indirecta: devuelve punto de imagenOrig (aun DOUBLE)
+    if (ui->comboBoxTransf->currentIndex() == DIRECTA) {
+        ui->comboBoxInterpolacion->setEnabled(false); //no se usa metodo de interpolacion
 
-            int X = (int) xy.getX(); //redondeo hacia abajo == floor(x);
-            int Y = (int) xy.getY();
-            //tambien: X + 1, Y + 1
-            //imagenAux.qimage.setPixel(Xp, Yp, 0); //prueba
-
-            if ((X >= imagenOrig.width()) || (Y >= imagenOrig.height()) || (X < 0) || (Y < 0) ) {//si el punto (X, Y) de imagenOrig se sale del rango
-                imagenAux.setPosFondo(Xp, Yp, TRANSP); //fuera de la imagen rotada: transparente
+        int Xp, Yp; // (X', Y')
+        //inicializa la imagen rotada
+        for (Xp = 0; Xp < imagenAux.width(); Xp++) // reocorre la imagen rotada (mapeado inverso)
+            for (Yp = 0; Yp < imagenAux.height(); Yp++) { // (X', Y')
+                imagenAux.setPosFondo(Xp, Yp, TRANSP);
+                //imagenAux.qimage.setPixel(Xp, Yp, COLOR_TRANSP);
             }
-            else {
-                double p = xy.getX() - X;
-                double q = xy.getY() - Y;
-                int gris;
-                //si esta dentro de imagenOrig: asignar (Xp, Yp) segun metodo interpolacion
-                if (ui->comboBoxInterpolacion->currentIndex() == VMP) { //Vecino mas proximo
-                    int vecinoX, vecinoY;
-                    if ((p > 0.5) && (X + 1 < imagenOrig.width())) //si se acerca mas a X+1 y X+1 no se sale de la imagen
-                       vecinoX = X + 1;
-                    else
-                        vecinoX = X;
+        imagenAux.update(); //pone toda la imagen a transparente
 
-                    if ((q > 0.5) && (Y + 1 < imagenOrig.height())) //si se acerca mas a Y+1 y Y+1 no se sale de la imagen
-                       vecinoY = Y + 1;
-                    else
-                        vecinoY = Y;
+        //transformacion directa
+        for (int X = 0; X < imagenOrig.width(); X++) // reocorre la imagen original
+            for (int Y = 0; Y < imagenOrig.height(); Y++) { // (X, Y)
+                FPoint p = tD(X, Y); //transformacion directa
+                Xp = (int) (p.getX() + 0.5); //(X', Y'): redondeo al mas cercano
+                Yp = (int) (p.getY() + 0.5);
+                //if ((Xp < imagenAux.width()) && (Yp < imagenAux.height()) && (Xp >= 0) && (Yp >= 0) ) {//si el punto (X', Y') de imagenAux NO se sale del rango
+                imagenAux.setPosFondo(Xp, Yp, imagenOrig.posFondo(X, Y));
+                imagenAux.qimage.setPixel(Xp, Yp, imagenOrig.gray(X, Y));
+                //cout << "\nwidth = " << imagenAux.width() << ", height = " << imagenAux.height() << flush;
+                //cout << "\nXp = " << Xp << ", Yp = " << Yp << flush;
+            }
+    } //if
 
-                    gris = imagenOrig.gray(vecinoX, vecinoY);
+    else { //transformacion INDIRECTA: la deseable
+        ui->comboBoxInterpolacion->setEnabled(true);
+        for (int Xp = 0; Xp < imagenAux.width(); Xp++) // reocorre la imagen rotada (mapeado inverso)
+            for (int Yp = 0; Yp < imagenAux.height(); Yp++) { // (X', Y')
+                FPoint xy = tI(Xp, Yp); //transformacion indirecta: devuelve punto de imagenOrig (aun DOUBLE)
+
+                int X = (int) xy.getX(); //redondeo hacia abajo == floor(x);
+                int Y = (int) xy.getY();
+                //tambien: X + 1, Y + 1
+                //imagenAux.qimage.setPixel(Xp, Yp, 0); //prueba
+
+                if ((X >= imagenOrig.width()) || (Y >= imagenOrig.height()) || (X < 0) || (Y < 0) ) {//si el punto (X, Y) de imagenOrig se sale del rango
+                    imagenAux.setPosFondo(Xp, Yp, TRANSP); //fuera de la imagen rotada: transparente
                 }
-                else { //Interpolacion Bilineal
-                    int A = imagenOrig.gray(X, Y);
-                    if ((X + 1 < imagenOrig.width()) && (Y + 1 < imagenOrig.height())) { //no se salen de la imagen
-                        int B = imagenOrig.gray(X + 1, Y);
-                        int C = imagenOrig.gray(X, Y + 1);
-                        //cout << ", dentro todo" << flush;
-                        int D = imagenOrig.gray(X + 1, Y + 1);
-                        gris = (int) ((C + (D - C) * p + (A - C) * q + (B + C - A - D) * p * q) + 0.5); //redondeo al mas cercano
-                    }
-                    else
-                        if ((X + 1 >= imagenOrig.width()) && (Y + 1 >= imagenOrig.height())) //se salen de la imagen
-                            gris = A; //es solo (X, Y)
+                else {
+                    double p = xy.getX() - X;
+                    double q = xy.getY() - Y;
+                    int gris;
+                    //si esta dentro de imagenOrig: asignar (Xp, Yp) segun metodo interpolacion
+                    if (ui->comboBoxInterpolacion->currentIndex() == VMP) { //Vecino mas proximo
+                        int vecinoX, vecinoY;
+                        if ((p > 0.5) && (X + 1 < imagenOrig.width())) //si se acerca mas a X+1 y X+1 no se sale de la imagen
+                           vecinoX = X + 1;
                         else
-                            if (X + 1 >= imagenOrig.width()) { //X+1 se sale
-                                int C = imagenOrig.gray(X, Y + 1);
-                                gris = (int) ((A + (C - A) * q) + 0.5); //Y..Y+1
-                            }
-                            else {
-                                int B = imagenOrig.gray(X + 1, Y);
-                                gris = (int) ((A + (B - A) * p) + 0.5); //X..X+1 (Y+1 se sale)
-                            }
-                } //fin bilineal
+                            vecinoX = X;
 
-                if (gris < 0)
-                    gris = 0;
-                else
-                    if (gris > imagenAux.M() - 1)
-                        gris = imagenAux.M() - 1;
+                        if ((q > 0.5) && (Y + 1 < imagenOrig.height())) //si se acerca mas a Y+1 y Y+1 no se sale de la imagen
+                           vecinoY = Y + 1;
+                        else
+                            vecinoY = Y;
 
-                imagenAux.qimage.setPixel(Xp, Yp, gris);
-            } //else if */
-        } //for */
+                        gris = imagenOrig.gray(vecinoX, vecinoY);
+                    }
+                    else { //Interpolacion Bilineal
+                        int A = imagenOrig.gray(X, Y);
+                        if ((X + 1 < imagenOrig.width()) && (Y + 1 < imagenOrig.height())) { //no se salen de la imagen
+                            int B = imagenOrig.gray(X + 1, Y);
+                            int C = imagenOrig.gray(X, Y + 1);
+                            //cout << ", dentro todo" << flush;
+                            int D = imagenOrig.gray(X + 1, Y + 1);
+                            gris = (int) ((C + (D - C) * p + (A - C) * q + (B + C - A - D) * p * q) + 0.5); //redondeo al mas cercano
+                        }
+                        else
+                            if ((X + 1 >= imagenOrig.width()) && (Y + 1 >= imagenOrig.height())) //se salen de la imagen
+                                gris = A; //es solo (X, Y)
+                            else
+                                if (X + 1 >= imagenOrig.width()) { //X+1 se sale
+                                    int C = imagenOrig.gray(X, Y + 1);
+                                    gris = (int) ((A + (C - A) * q) + 0.5); //Y..Y+1
+                                }
+                                else {
+                                    int B = imagenOrig.gray(X + 1, Y);
+                                    gris = (int) ((A + (B - A) * p) + 0.5); //X..X+1 (Y+1 se sale)
+                                }
+                    } //fin bilineal
 
+                    if (gris < 0)
+                        gris = 0;
+                    else
+                        if (gris > imagenAux.M() - 1)
+                            gris = imagenAux.M() - 1;
+
+                    imagenAux.qimage.setPixel(Xp, Yp, gris);
+                } //else if */
+            } //for */
+    }
 
     /*imagenAux.qimage.setPixel(Ep.getX(), Ep.getY(), 255); //pintar esquinas
     imagenAux.qimage.setPixel(Fp.getX(), Fp.getY(), 255);
     imagenAux.qimage.setPixel(Gp.getX(), Gp.getY(), 255);
     imagenAux.qimage.setPixel(Hp.getX(), Hp.getY(), 255);*/
+
     //imagenAux.setFondo(fondo);
     imagenAux.update(); //actualiza tambien todo lo que sea transparente
     emit(changed());

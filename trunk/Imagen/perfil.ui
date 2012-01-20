@@ -13,72 +13,53 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>330</y>
-     <width>410</width>
-     <height>24</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
-    <item>
-     <widget class="QRadioButton" name="radioButtonPerfil">
-      <property name="text">
-       <string>Perfil</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="radioButtondPerfil">
-      <property name="text">
-       <string>d(Perfil)</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="radioButtonPerfilSuave">
-      <property name="text">
-       <string>Perfil Suave</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="radioButtondPerfilSuave">
-      <property name="text">
-       <string>d(PerfilSuave)</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QLabel" name="labelPunto">
-   <property name="geometry">
-    <rect>
-     <x>160</x>
-     <y>290</y>
-     <width>221</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Pixel: _ Valor: _</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>61</x>
-     <y>380</y>
-     <width>351</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>¡Cuidado! Si la imagen es grande se podría colgar</string>
-   </property>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="hLayoutFunction"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelPunto">
+     <property name="text">
+      <string>Pixel: _ Valor: _</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QRadioButton" name="radioButtonPerfil">
+       <property name="text">
+        <string>Perfil</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioButtondPerfil">
+       <property name="text">
+        <string>d(Perfil)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioButtonPerfilSuave">
+       <property name="text">
+        <string>Perfil Suave</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioButtondPerfilSuave">
+       <property name="text">
+        <string>d(PerfilSuave)</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

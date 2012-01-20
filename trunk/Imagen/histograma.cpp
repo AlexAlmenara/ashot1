@@ -22,9 +22,9 @@ Histograma::Histograma(QWidget *parent, Imagen image, int hmax) : //int xmin, in
     connect(ui->radioButtonAcum, SIGNAL(clicked()), this, SLOT(histAcum()));
     connect(ui->radioButtonAcumNorm, SIGNAL(clicked()), this, SLOT(histAcumNorm()));
     ui->radioButtonAbs->setChecked(true); //empieza por defecto histograma absoluto
-    //firstPainted = false;
+    firstPainted = false;
     histAbs();
-    //firstPainted = true;
+    firstPainted = true;
 
 
     /*hist = QVector<double>(imagen.M());
@@ -58,19 +58,21 @@ void Histograma::updatePunto() {
 
 
 void Histograma::newFunction(double ymax) {
-    //if (firstPainted)
-        //ui->verticalLayout->removeWidget(function);
+    if (firstPainted) {
+        function->hide();
+        ui->hLayoutFunction->removeWidget(function);
+    }
         //ui->formLayout->removeWidget(function);
         //ui->gridLayout->removeWidget(function);
 
     function = new Function(this, hist, 0.0, imagen.M() - 1, 0.0, ymax); //por defecto histograma absoluto
-    function->resize(400, 200);
+    //function->resize(400, 200);
     function->show();
 
     //ui->horizontalLayoutFunction->setGeometry((const QRect) QRect(function->size().width(), function->size().height()));
     //ui->horizontalLayoutFunction->addWidget(function);
-    function->move(40, 20);
-    //ui->verticalLayout->addWidget(function);
+    //function->move(40, 20);
+    ui->hLayoutFunction->addWidget(function);
     //ui->formLayout->addWidget(function);
     //ui->gridLayout->addWidget(function);
     connect(function, SIGNAL(moused()), this, SLOT(updatePunto()));
