@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-TARGET = aShot1
+TARGET = aShot
 TEMPLATE = app
 
 
